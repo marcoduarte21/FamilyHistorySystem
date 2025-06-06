@@ -16,7 +16,7 @@ namespace FamilyHistorySystem.Services.interfaces
         Task<List<Estudiante>> GetAllWomen();
         Task<Estudiante> CreateAsync(EstudianteDTO estudiante);
         Task<Estudiante> UpdateAsync(int id, EstudianteDTO estudiante);
-        Task<Estudiante> DeleteAsync(EstudianteDTO estudiante);
+        Task<Estudiante> DeleteAsync(string cedula);
         Task<Estudiante> GetByIdAsync (int id);
         Task<Estudiante> GetByCedulaAsync(string cedula);
 

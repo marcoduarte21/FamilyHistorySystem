@@ -12,14 +12,14 @@ namespace FamilyHistorySystem.API.Controllers
     [ApiController]
     public class StudentController(DBContexto context) : ControllerBase
     {
-        DBContexto _context = context;
+        private DBContexto _context = context;
         StudentService StudentService = new(context);
 
         [HttpGet("getStudents")]
         public async Task<IActionResult> GetStudents()
         {
             var students = await StudentService.GetAllAsync();
-            return Ok(students);
+            return Ok(new { message = "students found successfully", students });
         }
 
         [HttpGet("getStudentById/{id}")]
@@ -30,7 +30,7 @@ namespace FamilyHistorySystem.API.Controllers
             {
                 return NotFound($"Student with id {id} not found.");
             }
-            return Ok(student);
+            return Ok(new { message = "student found successfully", student });
         }
 
         [HttpGet("getStudentByCedula/{cedula}")]
@@ -41,7 +41,7 @@ namespace FamilyHistorySystem.API.Controllers
             {
                 return NotFound($"Student with cedula {cedula} not found.");
             }
-            return Ok(student);
+            return Ok( new { message = "student found successfully", student });
 
         }
 
@@ -51,7 +51,7 @@ namespace FamilyHistorySystem.API.Controllers
                 if (ModelState.IsValid)
                 {
                 var newStudent = await StudentService.CreateAsync(student);
-                return CreatedAtAction(nameof(GetStudent), new { newStudent.Id }, newStudent);
+                return CreatedAtAction(nameof(GetStudent), new { newStudent.Id }, new { message = "student created sucessfully", newStudent });
             }
                 else
                 {
@@ -66,13 +66,28 @@ namespace FamilyHistorySystem.API.Controllers
             if (ModelState.IsValid)
             {
                 var student = await StudentService.UpdateAsync(id, estudiante);
-                return Ok(student);
+                return Ok(new { message = "Student updated successfully", student });
             }
             else
             {
                 return BadRequest(ModelState);
             }
 
+        }
+
+        [HttpDelete("delete/{cedula}")]
+        public async Task<IActionResult> DeleteStudent(string cedula)
+        {
+            var student = await StudentService.DeleteAsync(cedula);
+
+            if(student != null)
+            {
+                return Ok(new { message = "Student deleted successfully", student });
+            }
+            else
+            {
+                return BadRequest(new { message = "Something went wrong deleting this student" });
+            }
         }
 
     }

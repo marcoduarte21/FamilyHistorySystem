@@ -12,16 +12,10 @@ using FamilyHistorySystem.Models.DTOs;
 
 namespace FamilyHistorySystem.Services.services
 {
-    public class StudentService : IStudentService
+    public class StudentService(DBContexto connection) : IStudentService
     {
 
-        private DBContexto Connection;
-
-        public StudentService(DBContexto connection)
-        {
-            Connection = connection;
-        }
-
+        private DBContexto Connection = connection;
 
         public async Task<List<Estudiante>> GetAllWomen()
         {
@@ -29,7 +23,7 @@ namespace FamilyHistorySystem.Services.services
                                            where estudiante.Sexo == Sexo.FEMENINO   
                                            select estudiante;
 
-            return await listaDeMujeresRegistradas.ToListAsync() as List<Estudiante>;
+            return await listaDeMujeresRegistradas.ToListAsync();
 
         }
 
@@ -45,7 +39,7 @@ namespace FamilyHistorySystem.Services.services
                                             where estudiante.Sexo == Sexo.MASCULINO
                                             select estudiante;
 
-            return await listaHombresRegistrados.ToListAsync() as List<Estudiante>;
+            return await listaHombresRegistrados.ToListAsync();
 
         }
 
@@ -55,12 +49,11 @@ namespace FamilyHistorySystem.Services.services
 
             if (existingStudent != null)
             {
-                throw new CustomException("student already exists.", 404);
+                throw new CustomException("student already exists.", 400);
             }
 
             Estudiante newStudent = new()
             {
-                Id = estudiante.Id,
                 Cedula = estudiante.Cedula,
                 CedulaMadre = estudiante.CedulaMadre,
                 CedulaPadre = estudiante.CedulaPadre,
@@ -117,7 +110,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (existingStudent != null && existingStudent.Id != id)
             {
-                throw new CustomException("Student cedula already exists", 404);
+                throw new CustomException("Student cedula already exists", 400);
             }
 
                 StudentToUpdate.Cedula = estudiante.Cedula;
@@ -135,9 +128,29 @@ namespace FamilyHistorySystem.Services.services
                 
         }
 
-        public Task<Estudiante> DeleteAsync(EstudianteDTO estudiante)
+        public async Task<Estudiante> DeleteAsync(string cedula)
         {
-            throw new NotImplementedException();
+            Estudiante existingStudent = await GetByCedulaAsync(cedula);
+
+            if(existingStudent == null)
+            {
+                throw new CustomException("student not found to delete", 404);
+            }
+
+            Connection.Estudiantes.Remove(existingStudent);
+            await Connection.SaveChangesAsync();
+
+            Estudiante isDeleted = await GetByCedulaAsync(cedula);
+
+            if(isDeleted == null)
+            {
+                return existingStudent;
+            }
+            else
+            {
+                return null;
+            }
+
         }
     }
 }

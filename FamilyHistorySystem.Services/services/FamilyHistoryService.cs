@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using FamilyHistorySystem.Exceptions;
 using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Services.interfaces;
+using System.Collections;
 
 namespace FamilyHistorySystem.Services.services
 {
@@ -37,7 +38,7 @@ namespace FamilyHistorySystem.Services.services
             }
             else
             {
-                return await children.ToListAsync() as List<Estudiante>;
+                return await children.ToListAsync();
             }
         }
 
@@ -69,64 +70,43 @@ namespace FamilyHistorySystem.Services.services
         {
             Estudiante estudianteHijo;
             estudianteHijo = await StudentService.GetByCedulaAsync(cedula);
-            string cedulaDelPadre = estudianteHijo.CedulaPadre;
-            string cedulaDeLaMadre = estudianteHijo.CedulaMadre;
-
-            Estudiante estudiantePadre = await StudentService.GetByCedulaAsync(cedulaDelPadre);
-            Estudiante MadreDelEstudiante = await StudentService.GetByCedulaAsync(cedulaDeLaMadre);
+            List<Estudiante> parentsList = await GetParents(cedula);
+            List<Estudiante> grandParents = [];
 
             if (estudianteHijo == null)
             {
                 throw new CustomException("student not found", 404);
             }
-            if (estudiantePadre == null && MadreDelEstudiante == null)
-            {
-                throw new CustomException("parents not found.", 404);
-            }
 
-            if(estudiantePadre == null)
-            {
-                throw new CustomException("father not found.", 404);
-            }
-
-            if(MadreDelEstudiante == null)
-            {
-                throw new CustomException("mother not found.", 404);
-
-            }
-
-
-            if (MadreDelEstudiante != null && estudiantePadre == null)
-            {
-                var InformacionDeLosAbuelos = from estudiante in Connection.Estudiantes
-                                              where estudiante.Cedula == MadreDelEstudiante.CedulaPadre ||
-                                              estudiante.Cedula == MadreDelEstudiante.CedulaMadre
-                                              select estudiante;
-                return (List<Estudiante>)InformacionDeLosAbuelos.ToList();
-            }
-
-            if (estudiantePadre != null && MadreDelEstudiante == null)
+            foreach (var parent in parentsList)
             {
 
-                var InformacionDeLosAbuelos = from estudiante in Connection.Estudiantes
-                                              where estudiante.Cedula == estudiantePadre.CedulaPadre ||
-                                              estudiante.Cedula == estudiantePadre.CedulaMadre
-                                              select estudiante;
-                return (List<Estudiante>)InformacionDeLosAbuelos.ToList();
+                if ((parent.CedulaPadre != null && parent.CedulaMadre != null)
+                    || (parent.CedulaPadre != null) || (parent.CedulaMadre != null))
+                {
+                    var grandMother = await StudentService.GetByCedulaAsync(parent.CedulaMadre);
+                    var grandFather = await StudentService.GetByCedulaAsync(parent.CedulaPadre);
+                    if (grandMother != null)
+                    {
+                        grandParents.Add(grandMother);
+                    }
+
+                    if (grandFather != null)
+                    {
+                        grandParents.Add(grandFather);
+                    }
+                }
             }
 
-            if (estudiantePadre != null && MadreDelEstudiante != null)
+            if (grandParents.Count > 0)
             {
-                var InformacionDeLosAbuelos = from estudiante in Connection.Estudiantes
-                                              where estudiante.Cedula == MadreDelEstudiante.CedulaPadre ||
-                                              estudiante.Cedula == MadreDelEstudiante.CedulaMadre ||
-                                              estudiante.Cedula == estudiantePadre.CedulaPadre ||
-                                              estudiante.Cedula == estudiantePadre.CedulaMadre
-                                              select estudiante;
-                return await InformacionDeLosAbuelos.ToListAsync() as List<Estudiante>;
+                return grandParents;
+            }
+            else
+            {
+                throw new CustomException("Student doesn't have grandparents registered in this school.", 404);
             }
 
-            return null;
         }
 
         public async Task<List<Estudiante>> GetParents(string cedula)
@@ -146,11 +126,11 @@ namespace FamilyHistorySystem.Services.services
 
             if (InformacionDelPadre.Count() > 0)
             {
-                return (List<Estudiante>)InformacionDelPadre.ToList();
+                return await InformacionDelPadre.ToListAsync();
             }
             else
             {
-                return null;
+                throw new CustomException("Student doesn't have parents registered in this school.", 404);
             }
         }
 
@@ -171,61 +151,47 @@ namespace FamilyHistorySystem.Services.services
                                   || estudiante.CedulaMadre == cedulaDeLaMadre && estudiante.Cedula != cedula
                                   select estudiante;
 
+            if(listaDeHermanos.Count() == 0)
+            {
+                throw new CustomException("Student doesn't have siblings registered in this school.", 404);
+            }   
+
             return await listaDeHermanos.ToListAsync();
         }
 
         public async Task<List<Estudiante>> GetUncles(string cedula)
         {
-            Estudiante estudianteAConsultar;
-            estudianteAConsultar = await StudentService.GetByCedulaAsync(cedula);
-            string cedulaDelPadre = estudianteAConsultar.CedulaPadre;
-            string cedulaDeLaMadre = estudianteAConsultar.CedulaMadre;
-
-            Estudiante estudiantePadre;
-            estudiantePadre = await StudentService.GetByCedulaAsync(cedulaDelPadre);
-            string cedulaDelAbueloPaterno = null;
-            if (estudiantePadre != null)
+            Estudiante student;
+            student = await StudentService.GetByCedulaAsync(cedula);
+            if(student == null)
             {
-                cedulaDelAbueloPaterno = estudiantePadre.CedulaPadre;
+                throw new CustomException("Student not found.", 404);
             }
 
-            Estudiante MadreDelEstudiante;
-            MadreDelEstudiante = await StudentService.GetByCedulaAsync(cedulaDeLaMadre);
-            string cedulaDelAbueloMaterno = null;
-            if (MadreDelEstudiante != null)
+            List<Estudiante> uncles = [];
+            List<Estudiante> parents = await GetGrandParents(student.Cedula);
+            List<Estudiante> children = [];
+
+            foreach (Estudiante parent in parents)
             {
-                cedulaDelAbueloMaterno = MadreDelEstudiante.CedulaPadre;
+                if (parent != null) children = await GetChildren(parent.Cedula);
+                else continue;
+                foreach (Estudiante child in children)
+                {
+                    if (child.Cedula != student.CedulaPadre && child.Cedula != student.CedulaMadre)
+                    {
+                        uncles.Add(child);
+                    }
+                }
             }
 
-            if (cedulaDelAbueloPaterno != null && cedulaDelAbueloMaterno != null)
+            if(uncles.Count == 0)
             {
-                var listaDeTios = from estudiante in Connection.Estudiantes
-                                  where estudiante.CedulaPadre == cedulaDelAbueloPaterno && estudiante.Cedula != cedulaDelPadre
-                                  || estudiante.CedulaPadre == cedulaDelAbueloMaterno && estudiante.Cedula != cedulaDeLaMadre
-                                  select estudiante;
-
-                return (List<Estudiante>)listaDeTios.ToList();
+                throw new CustomException("Student doesn't have uncles registered in this school.", 404);
             }
-
-            if (cedulaDelAbueloPaterno != null && cedulaDelAbueloMaterno == null)
-            {
-                var listaDeTios = from estudiante in Connection.Estudiantes
-                                  where estudiante.CedulaPadre == cedulaDelAbueloPaterno && estudiante.Cedula != cedulaDelPadre
-
-                                  select estudiante;
-
-                return (List<Estudiante>)listaDeTios.ToList();
-            }
-
-            if (cedulaDelAbueloPaterno == null && cedulaDelAbueloMaterno != null)
-            {
-                var listaDeTios = from estudiante in Connection.Estudiantes
-                                  where estudiante.CedulaPadre == cedulaDelAbueloMaterno && estudiante.Cedula != cedulaDeLaMadre
-                                  select estudiante;
-
-                return (List<Estudiante>)listaDeTios.ToList();
-            }
-            return null;
+            List<Estudiante> noDuplicates = new HashSet<Estudiante>(uncles).ToList();
+            return noDuplicates;
+            
         }
     }
 }
