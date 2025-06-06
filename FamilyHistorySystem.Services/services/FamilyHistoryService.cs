@@ -14,10 +14,10 @@ using System.Collections;
 
 namespace FamilyHistorySystem.Services.services
 {
-    public class FamilyHistoryService(DBContexto connection, StudentService StudentService) : IFamilyHistory
+    public class FamilyHistoryService(DBContexto connection) : IFamilyHistory
     {
         private readonly DBContexto Connection = connection;
-        private readonly StudentService StudentService = StudentService;
+        private readonly StudentService StudentService = new StudentService(connection);
 
         public async Task<List<Estudiante>> GetChildren(string cedula)
         {

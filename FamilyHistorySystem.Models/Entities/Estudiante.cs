@@ -51,6 +51,11 @@ namespace FamilyHistorySystem.Models.Entities
                 var fechaNacimiento = FechaDeNacimiento.Value;
                 int edad = today.Year - fechaNacimiento.Year;
 
+                if(fechaNacimiento >= today)
+                {
+                    throw new CustomException("Fecha de nacimiento no puede ser en el futuro.", 400);
+                }
+
                 if (fechaNacimiento.Month > today.Month ||
                     fechaNacimiento.Month == today.Month && fechaNacimiento.Day > today.Day)
                 {
