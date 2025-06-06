@@ -11,13 +11,14 @@ using FamilyHistorySystem.Exceptions;
 using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Services.interfaces;
 using System.Collections;
+using AutoMapper;
 
 namespace FamilyHistorySystem.Services.services
 {
-    public class FamilyHistoryService(DBContexto connection) : IFamilyHistory
+    public class FamilyHistoryService(DBContexto connection, IMapper mapper) : IFamilyHistory
     {
         private readonly DBContexto Connection = connection;
-        private readonly StudentService StudentService = new StudentService(connection);
+        private readonly StudentService StudentService = new StudentService(connection, mapper);
 
         public async Task<List<Estudiante>> GetChildren(string cedula)
         {

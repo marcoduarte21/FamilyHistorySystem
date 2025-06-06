@@ -4,15 +4,16 @@ using FamilyHistorySystem.DataAccess;
 using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Services.services;
 using FamilyHistorySystem.Services.interfaces;
+using AutoMapper;
 
 namespace FamilyHistorySystem.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class FamilyHistoryStudentController(DBContexto context) : ControllerBase
+    public class FamilyHistoryStudentController(DBContexto context, IMapper mapper) : ControllerBase
     {
         private readonly DBContexto _context = context;
-        private readonly FamilyHistoryService _familyHistoryService = new(context);
+        private readonly FamilyHistoryService _familyHistoryService = new(context, mapper);
 
         [HttpGet("getParents/{cedula}")]
         public async Task<IActionResult> GetParents(string cedula)

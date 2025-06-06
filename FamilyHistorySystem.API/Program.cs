@@ -6,6 +6,7 @@ using FamilyHistorySystem.Exceptions;
 using FamilyHistorySystem.DataAccess;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore.SqlServer;
+using FamilyHistorySystem.AutoMapperProfiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,8 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DBContexto>(x => x.UseSqlServer(connectionString));
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
 

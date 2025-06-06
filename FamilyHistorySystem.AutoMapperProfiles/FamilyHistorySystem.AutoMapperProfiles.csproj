@@ -7,13 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="12.0.1" />
-    <PackageReference Include="NuGet.Protocol" Version="6.14.0" />
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FamilyHistorySystem.DataAccess\FamilyHistorySystem.DataAccess.csproj" />
-    <ProjectReference Include="..\FamilyHistorySystem.Exceptions\FamilyHistorySystem.Exceptions.csproj" />
     <ProjectReference Include="..\FamilyHistorySystem.Models\FamilyHistorySystem.Models.csproj" />
   </ItemGroup>
 

@@ -9,13 +9,15 @@ using Microsoft.EntityFrameworkCore;
 using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Services.interfaces;
 using FamilyHistorySystem.Models.DTOs;
+using AutoMapper;
 
 namespace FamilyHistorySystem.Services.services
 {
-    public class StudentService(DBContexto connection) : IStudentService
+    public class StudentService(DBContexto connection, IMapper mapper) : IStudentService
     {
 
         private DBContexto Connection = connection;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<List<Estudiante>> GetAllWomen()
         {
@@ -47,24 +49,14 @@ namespace FamilyHistorySystem.Services.services
         {
             Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
 
-            if (existingStudent != null)
-            {
-                throw new CustomException("student already exists.", 400);
-            }
+                if (existingStudent != null)
+                {
+                    throw new CustomException("student already exists.", 400);
+                }
 
-            Estudiante newStudent = new()
-            {
-                Cedula = estudiante.Cedula,
-                CedulaMadre = estudiante.CedulaMadre,
-                CedulaPadre = estudiante.CedulaPadre,
-                FechaDeNacimiento = estudiante.FechaDeNacimiento,
-                Sexo = estudiante.Sexo,
-                Nombre = estudiante.Nombre,
-                PrimerApellido = estudiante.PrimerApellido,
-                SegundoApellido = estudiante.SegundoApellido
-            };
+                var newStudent = _mapper.Map<Estudiante>(estudiante);
 
-            await Connection.Estudiantes.AddAsync(newStudent);
+                await Connection.Estudiantes.AddAsync(newStudent);
                 await Connection.SaveChangesAsync();
 
                 return newStudent;
@@ -96,14 +88,8 @@ namespace FamilyHistorySystem.Services.services
                 throw new CustomException("Student cedula already exists", 400);
             }
 
-                existingStudent.Cedula = estudiante.Cedula;
-                existingStudent.Nombre = estudiante.Nombre;
-                existingStudent.PrimerApellido = estudiante.PrimerApellido;
-                existingStudent.SegundoApellido = estudiante.SegundoApellido;
-                existingStudent.Sexo = estudiante.Sexo;
-                existingStudent.FechaDeNacimiento = estudiante.FechaDeNacimiento;
-                existingStudent.CedulaPadre = estudiante.CedulaPadre;
-                existingStudent.CedulaMadre = estudiante.CedulaMadre;
+                existingStudent = _mapper.Map<Estudiante>(estudiante);
+
                 Connection.Estudiantes.Update(existingStudent);
                 await Connection.SaveChangesAsync();
                 

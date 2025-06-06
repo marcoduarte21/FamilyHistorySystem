@@ -5,15 +5,16 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Models.DTOs;
+using AutoMapper;
 
 namespace FamilyHistorySystem.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class StudentController(DBContexto context) : ControllerBase
+    public class StudentController(DBContexto context, IMapper mapper) : ControllerBase
     {
         private DBContexto _context = context;
-        StudentService StudentService = new(context);
+        StudentService StudentService = new(context, mapper);
 
         [HttpGet("getStudents")]
         public async Task<IActionResult> GetStudents()

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FamilyHistorySystem.AutoMapperProfiles\FamilyHistorySystem.AutoMapperProfiles.csproj" />
     <ProjectReference Include="..\FamilyHistorySystem.DataAccess\FamilyHistorySystem.DataAccess.csproj" />
     <ProjectReference Include="..\FamilyHistorySystem.Models\FamilyHistorySystem.Models.csproj" />
     <ProjectReference Include="..\FamilyHistorySystem.Services\FamilyHistorySystem.Services.csproj" />
