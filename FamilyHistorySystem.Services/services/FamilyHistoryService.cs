@@ -14,25 +14,22 @@ using System.Collections;
 
 namespace FamilyHistorySystem.Services.services
 {
-    public class FamilyHistoryService(DBContexto connection) : IFamilyHistory
+    public class FamilyHistoryService(DBContexto connection, StudentService StudentService) : IFamilyHistory
     {
-        private DBContexto Connection = connection;
-        private StudentService? StudentService = new(connection);
+        private readonly DBContexto Connection = connection;
+        private readonly StudentService StudentService = StudentService;
 
         public async Task<List<Estudiante>> GetChildren(string cedula)
         {
-            Estudiante estudiantePadre = await StudentService.GetByCedulaAsync(cedula);
-            if (estudiantePadre == null)
-            {
+            Estudiante estudiantePadre = await StudentService.GetByCedulaAsync(cedula) ?? 
                 throw new CustomException("Student not Found", 404);
-            }
 
             var children = from estudiante in Connection.Estudiantes
-                        where estudiante.CedulaPadre == estudiantePadre.Cedula || 
-                        estudiante.CedulaMadre == estudiantePadre.Cedula
-                        select estudiante;
-            int count = children.Count();
-            if (count == 0)
+                           where (estudiante.CedulaPadre == estudiantePadre.Cedula) ||
+                           (estudiante.CedulaMadre == estudiantePadre.Cedula)
+                           select estudiante;
+
+            if (!children.Any())
             {
                 throw new CustomException("Student doesn't have children registered in this school.", 404);
             }
@@ -146,9 +143,9 @@ namespace FamilyHistorySystem.Services.services
             string cedulaDeLaMadre = estudianteAConsultar.CedulaMadre;
 
             var listaDeHermanos = from estudiante in Connection.Estudiantes
-                                  where estudiante.CedulaPadre == cedulaDelPadre && estudiante.CedulaMadre == cedulaDeLaMadre
-                                  && estudiante.Cedula != cedula || estudiante.CedulaPadre == cedulaDelPadre && estudiante.Cedula != cedula
-                                  || estudiante.CedulaMadre == cedulaDeLaMadre && estudiante.Cedula != cedula
+                                  where (estudiante.CedulaPadre == cedulaDelPadre && estudiante.CedulaMadre == cedulaDeLaMadre
+                                  && estudiante.Cedula != cedula) || (estudiante.CedulaPadre == cedulaDelPadre && estudiante.Cedula != cedula)
+                                  || (estudiante.CedulaMadre == cedulaDeLaMadre && estudiante.Cedula != cedula)
                                   select estudiante;
 
             if(listaDeHermanos.Count() == 0)

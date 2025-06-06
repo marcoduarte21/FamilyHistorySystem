@@ -19,11 +19,11 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<List<Estudiante>> GetAllWomen()
         {
-           var listaDeMujeresRegistradas = from estudiante in Connection.Estudiantes
+           var womenList = from estudiante in Connection.Estudiantes
                                            where estudiante.Sexo == Sexo.FEMENINO   
                                            select estudiante;
 
-            return await listaDeMujeresRegistradas.ToListAsync();
+            return await womenList.ToListAsync();
 
         }
 
@@ -35,11 +35,11 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<List<Estudiante>> GetAllMen()
         {
-            var listaHombresRegistrados =from estudiante in Connection.Estudiantes
+            var menList =from estudiante in Connection.Estudiantes
                                             where estudiante.Sexo == Sexo.MASCULINO
                                             select estudiante;
 
-            return await listaHombresRegistrados.ToListAsync();
+            return await menList.ToListAsync();
 
         }
 
@@ -73,58 +73,41 @@ namespace FamilyHistorySystem.Services.services
         public async Task<Estudiante> GetByCedulaAsync(string cedula)
         {
             var estudiante = await Connection.Estudiantes.FirstOrDefaultAsync(x => x.Cedula == cedula);
-            if(estudiante != null)
-            {
-                return estudiante;
-            }
-            else
-            {
-                return null;
-            }
+
+            return estudiante;
         }
 
         public async Task<Estudiante> GetByIdAsync(int id)
         {
             var estudiante = await Connection.Estudiantes.FindAsync(id);
 
-            if (estudiante != null)
-            {
-                return estudiante;
-            }
-            else
-            {
-                return null;
-            }
+            return estudiante;
+
         }
 
         public async Task<Estudiante> UpdateAsync(int id, EstudianteDTO estudiante)
         {
-                Estudiante StudentToUpdate;
-                StudentToUpdate = await GetByIdAsync(id);
-                Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
+            Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
 
-            if (StudentToUpdate == null)
-            {
-                throw new CustomException("student not found to update", 404);
-            }
+            if(existingStudent.Equals(null)) throw new CustomException("student not found to update", 404);
 
-            if (existingStudent != null && existingStudent.Id != id)
+            if (!existingStudent.Equals(null) && !existingStudent.Id.Equals(id))
             {
                 throw new CustomException("Student cedula already exists", 400);
             }
 
-                StudentToUpdate.Cedula = estudiante.Cedula;
-                StudentToUpdate.Nombre = estudiante.Nombre;
-                StudentToUpdate.PrimerApellido = estudiante.PrimerApellido;
-                StudentToUpdate.SegundoApellido = estudiante.SegundoApellido;
-                StudentToUpdate.Sexo = estudiante.Sexo;
-                StudentToUpdate.FechaDeNacimiento = estudiante.FechaDeNacimiento;
-                StudentToUpdate.CedulaPadre = estudiante.CedulaPadre;
-                StudentToUpdate.CedulaMadre = estudiante.CedulaMadre;
-                Connection.Estudiantes.Update(StudentToUpdate);
+                existingStudent.Cedula = estudiante.Cedula;
+                existingStudent.Nombre = estudiante.Nombre;
+                existingStudent.PrimerApellido = estudiante.PrimerApellido;
+                existingStudent.SegundoApellido = estudiante.SegundoApellido;
+                existingStudent.Sexo = estudiante.Sexo;
+                existingStudent.FechaDeNacimiento = estudiante.FechaDeNacimiento;
+                existingStudent.CedulaPadre = estudiante.CedulaPadre;
+                existingStudent.CedulaMadre = estudiante.CedulaMadre;
+                Connection.Estudiantes.Update(existingStudent);
                 await Connection.SaveChangesAsync();
                 
-                return StudentToUpdate;
+                return existingStudent;
                 
         }
 
@@ -140,16 +123,7 @@ namespace FamilyHistorySystem.Services.services
             Connection.Estudiantes.Remove(existingStudent);
             await Connection.SaveChangesAsync();
 
-            Estudiante isDeleted = await GetByCedulaAsync(cedula);
-
-            if(isDeleted == null)
-            {
-                return existingStudent;
-            }
-            else
-            {
-                return null;
-            }
+            return existingStudent;
 
         }
     }
