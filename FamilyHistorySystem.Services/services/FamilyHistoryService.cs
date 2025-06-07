@@ -15,20 +15,25 @@ using AutoMapper;
 
 namespace FamilyHistorySystem.Services.services
 {
-    public class FamilyHistoryService(DBContexto connection, IMapper mapper) : IFamilyHistory
+    public class FamilyHistoryService : IFamilyHistory
     {
-        private readonly DBContexto Connection = connection;
-        private readonly StudentService StudentService = new StudentService(connection, mapper);
+        private readonly DBContexto _context;
+        private readonly StudentService _studentService;
+
+        public FamilyHistoryService(DBContexto context, IMapper mapper)
+        {
+            _context = context;
+            _studentService = new StudentService(context, mapper);
+        }
 
         public async Task<List<Estudiante>> GetChildren(string cedula)
         {
-            Estudiante estudiantePadre = await StudentService.GetByCedulaAsync(cedula) ?? 
+            Estudiante parent = await _studentService.GetByCedulaAsync(cedula) ??
                 throw new CustomException("Student not Found", 404);
 
-            var children = from estudiante in Connection.Estudiantes
-                           where (estudiante.CedulaPadre == estudiantePadre.Cedula) ||
-                           (estudiante.CedulaMadre == estudiantePadre.Cedula)
-                           select estudiante;
+            var children = await _context.Estudiantes.Where(e =>
+            e.CedulaPadre == parent.Cedula
+            || e.CedulaMadre == parent.Cedula).ToListAsync();
 
             if (!children.Any())
             {
@@ -36,95 +41,66 @@ namespace FamilyHistorySystem.Services.services
             }
             else
             {
-                return await children.ToListAsync();
+                return children;
             }
         }
 
         public async Task<List<Estudiante>> GetCousins(string cedula)
         {
-            var listaDeTios = await GetUncles(cedula);
-            var lista = new List<Estudiante>();
+            Estudiante estudiante = await _studentService.GetByCedulaAsync(cedula) ??
+            throw new CustomException("Student not found.", 404);
+            var uncles = await GetUncles(cedula);
+            var cedulasUncles = uncles.Select(u => u.Cedula).ToList();
 
-            if (listaDeTios != null)
+            var cousins = await _context.Estudiantes
+                .Where(e => (cedulasUncles.Contains(e.CedulaPadre)
+                || cedulasUncles.Contains(e.CedulaMadre))).ToListAsync();
+
+            if (!cousins.Any())
             {
-                foreach (var tio in listaDeTios)
-                {
-                    foreach (var primo in Connection.Estudiantes)
-                    {
-                        if (tio.Cedula == primo.CedulaPadre || tio.Cedula == primo.CedulaMadre)
-                        {
-                            lista.Add(primo);
-                        }
-                    }
-                }
-
-                return lista.ToList();
+                throw new CustomException("Student doesn't have cousins registered in this school.", 404);
             }
 
-            return null;
+            return cousins;
         }
 
         public async Task<List<Estudiante>> GetGrandParents(string cedula)
         {
-            Estudiante estudianteHijo;
-            estudianteHijo = await StudentService.GetByCedulaAsync(cedula);
-            List<Estudiante> parentsList = await GetParents(cedula);
-            List<Estudiante> grandParents = [];
+            Estudiante student;
+            student = await _studentService.GetByCedulaAsync(cedula) ??
+                throw new CustomException("Student not found", 404);
+            List<Estudiante> parents = await GetParents(cedula);
 
-            if (estudianteHijo == null)
-            {
-                throw new CustomException("student not found", 404);
-            }
+            var grandparentsID = parents.SelectMany(p =>
+            new[] { p.CedulaMadre, p.CedulaPadre }).Distinct().ToList();
 
-            foreach (var parent in parentsList)
-            {
+            var grandparents = await _context.Estudiantes
+                .Where(e => grandparentsID.Contains(e.Cedula)).ToListAsync();
 
-                if ((parent.CedulaPadre != null && parent.CedulaMadre != null)
-                    || (parent.CedulaPadre != null) || (parent.CedulaMadre != null))
-                {
-                    var grandMother = await StudentService.GetByCedulaAsync(parent.CedulaMadre);
-                    var grandFather = await StudentService.GetByCedulaAsync(parent.CedulaPadre);
-                    if (grandMother != null)
-                    {
-                        grandParents.Add(grandMother);
-                    }
-
-                    if (grandFather != null)
-                    {
-                        grandParents.Add(grandFather);
-                    }
-                }
-            }
-
-            if (grandParents.Count > 0)
-            {
-                return grandParents;
-            }
-            else
+            if (!grandparents.Any())
             {
                 throw new CustomException("Student doesn't have grandparents registered in this school.", 404);
             }
-
+            else
+            {
+                return grandparents;
+            }
         }
 
         public async Task<List<Estudiante>> GetParents(string cedula)
         {
-            Estudiante estudianteHijo;
-            estudianteHijo = await StudentService.GetByCedulaAsync(cedula);
-
-            if (estudianteHijo == null)
-            {
+            Estudiante student;
+            student = await _studentService.GetByCedulaAsync(cedula) ??
                 throw new CustomException("Student not found.", 404);
-            }
 
-            var InformacionDelPadre = from estudiante in Connection.Estudiantes
-                                      where estudiante.Cedula == estudianteHijo.CedulaPadre
-                                      || estudiante.Cedula == estudianteHijo.CedulaMadre
-                                      select estudiante;
+            var parents = await _context.Estudiantes
+                .Where(e =>
+                e.Cedula == student.CedulaPadre
+                || e.Cedula == student.CedulaMadre).ToListAsync();
 
-            if (InformacionDelPadre.Count() > 0)
+            if (parents.Any())
             {
-                return await InformacionDelPadre.ToListAsync();
+                return parents;
             }
             else
             {
@@ -134,62 +110,49 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<List<Estudiante>> GetSiblings(string cedula)
         {
-            Estudiante estudianteAConsultar;
-            estudianteAConsultar = await StudentService.GetByCedulaAsync(cedula);
-            if(estudianteAConsultar == null)
-            {
-                throw new CustomException("Student not found.", 404);
-            }
-            string cedulaDelPadre = estudianteAConsultar.CedulaPadre;
-            string cedulaDeLaMadre = estudianteAConsultar.CedulaMadre;
+            Estudiante student;
+            student = await _studentService.GetByCedulaAsync(cedula) ??
+            throw new CustomException("Student not found.", 404);
 
-            var listaDeHermanos = from estudiante in Connection.Estudiantes
-                                  where (estudiante.CedulaPadre == cedulaDelPadre && estudiante.CedulaMadre == cedulaDeLaMadre
-                                  && estudiante.Cedula != cedula) || (estudiante.CedulaPadre == cedulaDelPadre && estudiante.Cedula != cedula)
-                                  || (estudiante.CedulaMadre == cedulaDeLaMadre && estudiante.Cedula != cedula)
-                                  select estudiante;
+            string fatherID = student.CedulaPadre;
+            string motherID = student.CedulaMadre;
 
-            if(listaDeHermanos.Count() == 0)
+
+            var siblings = await _context.Estudiantes.Where(e =>
+            (e.CedulaPadre == fatherID || e.CedulaMadre == motherID)
+                && e.Cedula != student.Cedula).ToListAsync();
+
+            if (!siblings.Any())
             {
                 throw new CustomException("Student doesn't have siblings registered in this school.", 404);
-            }   
+            }
 
-            return await listaDeHermanos.ToListAsync();
+            return siblings;
         }
 
         public async Task<List<Estudiante>> GetUncles(string cedula)
         {
             Estudiante student;
-            student = await StudentService.GetByCedulaAsync(cedula);
-            if(student == null)
-            {
-                throw new CustomException("Student not found.", 404);
-            }
+            student = await _studentService.GetByCedulaAsync(cedula) ??
+            throw new CustomException("Student not found.", 404);
 
-            List<Estudiante> uncles = [];
             List<Estudiante> parents = await GetGrandParents(student.Cedula);
-            List<Estudiante> children = [];
+            var parentsID = parents.Select(p => p.Cedula).ToList();
 
-            foreach (Estudiante parent in parents)
-            {
-                if (parent != null) children = await GetChildren(parent.Cedula);
-                else continue;
-                foreach (Estudiante child in children)
-                {
-                    if (child.Cedula != student.CedulaPadre && child.Cedula != student.CedulaMadre)
-                    {
-                        uncles.Add(child);
-                    }
-                }
-            }
+            var uncles = await _context.Estudiantes
+                .Where(e => (parentsID.Contains(e.CedulaPadre)
+                || parentsID.Contains(e.CedulaMadre))
+                && (e.Cedula != student.CedulaPadre
+                && e.Cedula != student.CedulaMadre)).ToListAsync();
 
-            if(uncles.Count == 0)
+            if (!uncles.Any())
             {
                 throw new CustomException("Student doesn't have uncles registered in this school.", 404);
             }
-            List<Estudiante> noDuplicates = new HashSet<Estudiante>(uncles).ToList();
-            return noDuplicates;
-            
+            else
+            {
+                return uncles;
+            }
         }
     }
 }

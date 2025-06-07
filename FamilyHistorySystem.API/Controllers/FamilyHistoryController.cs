@@ -13,7 +13,7 @@ namespace FamilyHistorySystem.API.Controllers
     public class FamilyHistoryStudentController(DBContexto context, IMapper mapper) : ControllerBase
     {
         private readonly DBContexto _context = context;
-        private readonly FamilyHistoryService _familyHistoryService = new(context, mapper);
+        private readonly FamilyHistoryService _familyHistoryService = new(context,mapper);
 
         [HttpGet("getParents/{cedula}")]
         public async Task<IActionResult> GetParents(string cedula)
