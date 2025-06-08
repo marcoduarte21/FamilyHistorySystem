@@ -12,24 +12,25 @@ using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Services.interfaces;
 using System.Collections;
 using AutoMapper;
+using FamilyHistorySystem.Utils.constants.messages.ErrorMessage;
+using FamilyHistorySystem.Utils.constants.Response;
 
 namespace FamilyHistorySystem.Services.services
 {
     public class FamilyHistoryService : IFamilyHistory
     {
+        private readonly IStudentService _studentService;
         private readonly DBContexto _context;
-        private readonly StudentService _studentService;
 
-        public FamilyHistoryService(DBContexto context, IMapper mapper)
+        public FamilyHistoryService(IStudentService studentService, DBContexto context)
         {
+            _studentService = studentService;
             _context = context;
-            _studentService = new StudentService(context, mapper);
         }
 
         public async Task<List<Estudiante>> GetChildren(string cedula)
         {
-            Estudiante parent = await _studentService.GetByCedulaAsync(cedula) ??
-                throw new CustomException("Student not Found", 404);
+            Estudiante parent = await _studentService.GetByCedulaOrThrow(cedula);
 
             var children = await _context.Estudiantes.Where(e =>
             e.CedulaPadre == parent.Cedula
@@ -37,7 +38,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (!children.Any())
             {
-                throw new CustomException("Student doesn't have children registered in this school.", 404);
+                throw new CustomException(ErrorMessage.NoChildrenFound, StatusCode.NotFound);
             }
             else
             {
@@ -47,8 +48,7 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<List<Estudiante>> GetCousins(string cedula)
         {
-            Estudiante estudiante = await _studentService.GetByCedulaAsync(cedula) ??
-            throw new CustomException("Student not found.", 404);
+            Estudiante estudiante = await _studentService.GetByCedulaOrThrow(cedula);
             var uncles = await GetUncles(cedula);
             var cedulasUncles = uncles.Select(u => u.Cedula).ToList();
 
@@ -58,7 +58,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (!cousins.Any())
             {
-                throw new CustomException("Student doesn't have cousins registered in this school.", 404);
+                throw new CustomException(ErrorMessage.NoCousinsFound, StatusCode.NotFound);
             }
 
             return cousins;
@@ -67,8 +67,8 @@ namespace FamilyHistorySystem.Services.services
         public async Task<List<Estudiante>> GetGrandParents(string cedula)
         {
             Estudiante student;
-            student = await _studentService.GetByCedulaAsync(cedula) ??
-                throw new CustomException("Student not found", 404);
+            student = await _studentService.GetByCedulaOrThrow(cedula);
+
             List<Estudiante> parents = await GetParents(cedula);
 
             var grandparentsID = parents.SelectMany(p =>
@@ -79,7 +79,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (!grandparents.Any())
             {
-                throw new CustomException("Student doesn't have grandparents registered in this school.", 404);
+                throw new CustomException(ErrorMessage.NoGrandParentsFound, StatusCode.NotFound);
             }
             else
             {
@@ -90,9 +90,7 @@ namespace FamilyHistorySystem.Services.services
         public async Task<List<Estudiante>> GetParents(string cedula)
         {
             Estudiante student;
-            student = await _studentService.GetByCedulaAsync(cedula) ??
-                throw new CustomException("Student not found.", 404);
-
+            student = await _studentService.GetByCedulaOrThrow(cedula);
             var parents = await _context.Estudiantes
                 .Where(e =>
                 e.Cedula == student.CedulaPadre
@@ -104,15 +102,14 @@ namespace FamilyHistorySystem.Services.services
             }
             else
             {
-                throw new CustomException("Student doesn't have parents registered in this school.", 404);
+                throw new CustomException(ErrorMessage.NoParentsFound, StatusCode.NotFound);
             }
         }
 
         public async Task<List<Estudiante>> GetSiblings(string cedula)
         {
             Estudiante student;
-            student = await _studentService.GetByCedulaAsync(cedula) ??
-            throw new CustomException("Student not found.", 404);
+            student = await _studentService.GetByCedulaOrThrow(cedula);
 
             string fatherID = student.CedulaPadre;
             string motherID = student.CedulaMadre;
@@ -124,7 +121,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (!siblings.Any())
             {
-                throw new CustomException("Student doesn't have siblings registered in this school.", 404);
+                throw new CustomException(ErrorMessage.NoSiblingsFound, StatusCode.NotFound);
             }
 
             return siblings;
@@ -133,8 +130,7 @@ namespace FamilyHistorySystem.Services.services
         public async Task<List<Estudiante>> GetUncles(string cedula)
         {
             Estudiante student;
-            student = await _studentService.GetByCedulaAsync(cedula) ??
-            throw new CustomException("Student not found.", 404);
+            student = await _studentService.GetByCedulaOrThrow(cedula);
 
             List<Estudiante> parents = await GetGrandParents(student.Cedula);
             var parentsID = parents.Select(p => p.Cedula).ToList();
@@ -147,7 +143,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (!uncles.Any())
             {
-                throw new CustomException("Student doesn't have uncles registered in this school.", 404);
+                throw new CustomException(ErrorMessage.NoUnclesFound, StatusCode.NotFound);
             }
             else
             {

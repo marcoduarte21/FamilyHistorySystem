@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamilyHistorySystem.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamilyHistorySystem.AutoMapperProfiles", "FamilyHistorySystem.AutoMapperProfiles\FamilyHistorySystem.AutoMapperProfiles.csproj", "{BA661709-29A1-4ADA-8EF0-399A6EEF6206}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamilyHistorySystem.Utils", "FamilyHistorySystem.Utils\FamilyHistorySystem.Utils.csproj", "{817F25AF-50CB-4429-8834-65176741FF75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{BA661709-29A1-4ADA-8EF0-399A6EEF6206}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA661709-29A1-4ADA-8EF0-399A6EEF6206}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA661709-29A1-4ADA-8EF0-399A6EEF6206}.Release|Any CPU.Build.0 = Release|Any CPU
+		{817F25AF-50CB-4429-8834-65176741FF75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{817F25AF-50CB-4429-8834-65176741FF75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{817F25AF-50CB-4429-8834-65176741FF75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{817F25AF-50CB-4429-8834-65176741FF75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

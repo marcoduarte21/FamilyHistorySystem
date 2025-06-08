@@ -19,6 +19,9 @@ namespace FamilyHistorySystem.Services.interfaces
         Task<Estudiante> DeleteAsync(string cedula);
         Task<Estudiante> GetByIdAsync (int id);
         Task<Estudiante> GetByCedulaAsync(string cedula);
+        Task<Estudiante> GetByIdOrThrow(int id);
+        Task<Estudiante> GetByCedulaOrThrow(string cedula);
+
 
     }
 }

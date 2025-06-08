@@ -15,6 +15,7 @@
     <ProjectReference Include="..\FamilyHistorySystem.DataAccess\FamilyHistorySystem.DataAccess.csproj" />
     <ProjectReference Include="..\FamilyHistorySystem.Exceptions\FamilyHistorySystem.Exceptions.csproj" />
     <ProjectReference Include="..\FamilyHistorySystem.Models\FamilyHistorySystem.Models.csproj" />
+    <ProjectReference Include="..\FamilyHistorySystem.Utils\FamilyHistorySystem.Utils.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,6 +7,7 @@ using FamilyHistorySystem.DataAccess;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using FamilyHistorySystem.AutoMapperProfiles;
+using FamilyHistorySystem.Utils.constants.Response;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,7 @@ app.UseExceptionHandler(errorApp =>
 
         context.Response.StatusCode = statusCode;
 
-        var response = new { error = error?.Message };
+        var response = new ApiResponse<object>(error?.Message, null, false);
         await context.Response.WriteAsJsonAsync(response);
     });
 });

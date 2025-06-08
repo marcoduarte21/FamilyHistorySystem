@@ -6,43 +6,43 @@ using Microsoft.AspNetCore.Mvc;
 using FamilyHistorySystem.Models.Entities;
 using FamilyHistorySystem.Models.DTOs;
 using AutoMapper;
+using FamilyHistorySystem.Services.interfaces;
+using FamilyHistorySystem.Utils.constants.Response;
+using FamilyHistorySystem.Utils.constants.messages.successMessage;
+using FamilyHistorySystem.Utils.constants.messages.ErrorMessage;
 
 namespace FamilyHistorySystem.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class StudentController(DBContexto context, IMapper mapper) : ControllerBase
+    public class StudentController : ControllerBase
     {
-        private DBContexto _context = context;
-        StudentService StudentService = new(context, mapper);
+        private readonly IStudentService _studentService;
+        public StudentController(IStudentService studentService) {
+            _studentService = studentService;
+        }
 
         [HttpGet("getStudents")]
         public async Task<IActionResult> GetStudents()
         {
-            var students = await StudentService.GetAllAsync();
-            return Ok(new { message = "students found successfully", students });
+            var students = await _studentService.GetAllAsync();
+            return Ok(new ApiResponse<List<Estudiante>>(SuccessMessage.StudentsFound, students));
         }
 
         [HttpGet("getStudentById/{id}")]
         public async Task<IActionResult> GetStudent(int id)
         {
-            var student = await StudentService.GetByIdAsync(id);
-            if (student == null)
-            {
-                return NotFound($"Student with id {id} not found.");
-            }
-            return Ok(new { message = "student found successfully", student });
+            var student = await _studentService.GetByIdOrThrow(id);
+            
+            return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentFound, student));
         }
 
         [HttpGet("getStudentByCedula/{cedula}")]
         public async Task<IActionResult> GetStudentByCedula(string cedula)
         {
-            var student  = await StudentService.GetByCedulaAsync(cedula);
-            if(student == null)
-            {
-                return NotFound($"Student with cedula {cedula} not found.");
-            }
-            return Ok( new { message = "student found successfully", student });
+            var student  = await _studentService.GetByCedulaOrThrow(cedula);
+
+            return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentFound, student));
 
         }
 
@@ -51,8 +51,9 @@ namespace FamilyHistorySystem.API.Controllers
         {
                 if (ModelState.IsValid)
                 {
-                var newStudent = await StudentService.CreateAsync(student);
-                return CreatedAtAction(nameof(GetStudent), new { newStudent.Id }, new { message = "student created sucessfully", newStudent });
+                var newStudent = await _studentService.CreateAsync(student);
+                return CreatedAtAction(nameof(GetStudent), 
+                    new { newStudent.Id }, new ApiResponse<Estudiante>(SuccessMessage.StudentCreated, newStudent));
             }
                 else
                 {
@@ -66,8 +67,8 @@ namespace FamilyHistorySystem.API.Controllers
 
             if (ModelState.IsValid)
             {
-                var student = await StudentService.UpdateAsync(id, estudiante);
-                return Ok(new { message = "Student updated successfully", student });
+                var student = await _studentService.UpdateAsync(id, estudiante);
+                return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentUpdated, student));
             }
             else
             {
@@ -79,15 +80,15 @@ namespace FamilyHistorySystem.API.Controllers
         [HttpDelete("delete/{cedula}")]
         public async Task<IActionResult> DeleteStudent(string cedula)
         {
-            var student = await StudentService.DeleteAsync(cedula);
+            var student = await _studentService.DeleteAsync(cedula);
 
             if(student != null)
             {
-                return Ok(new { message = "Student deleted successfully", student });
+                return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentDeleted, student));
             }
             else
             {
-                return BadRequest(new { message = "Something went wrong deleting this student" });
+                return BadRequest(new ApiResponse<object>(ErrorMessage.StudentNotDeleted, null, false));
             }
         }
 
