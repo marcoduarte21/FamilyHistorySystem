@@ -11,17 +11,16 @@ namespace FamilyHistorySystem.Services.interfaces
 {
     public interface IStudentService
     {
-        Task<List<Estudiante>> GetAllAsync();
-        Task<List<Estudiante>> GetAllMen();
-        Task<List<Estudiante>> GetAllWomen();
-        Task<Estudiante> CreateAsync(EstudianteDTO estudiante);
-        Task<Estudiante> UpdateAsync(int id, EstudianteDTO estudiante);
-        Task<Estudiante> DeleteAsync(string cedula);
-        Task<Estudiante> GetByIdAsync (int id);
-        Task<Estudiante> GetByCedulaAsync(string cedula);
-        Task<Estudiante> GetByIdOrThrow(int id);
-        Task<Estudiante> GetByCedulaOrThrow(string cedula);
-
-
+        Task<PagedResult<StudentResponseDTO>> GetAllAsync(int currentPage, int pageSize);
+        Task<List<StudentResponseDTO>> GetAllByGender(Gender gender);
+        Task<List<StudentResponseDTO>> GetAllMen();
+        Task<List<StudentResponseDTO>> GetAllWomen();
+        Task<StudentResponseDTO> CreateAsync(StudentRequestDTO student);
+        Task<StudentResponseDTO> UpdateAsync(Guid id, StudentRequestDTO student);
+        Task<StudentResponseDTO> DeleteAsync(Guid id);
+        Task<Student> GetByIdAsync (Guid id);
+        Task<Student> GetByNationalIdAsync(string nationalId);
+        Task<Student> GetByIdOrThrow(Guid id);
+        Task<Student> GetByNationalIdOrThrow(string nationalId);
     }
 }

@@ -26,109 +26,127 @@ namespace FamilyHistorySystem.Services.services
             _context = connection;
             _mapper = mapper;
         }
-
-        public async Task<List<Estudiante>> GetAllWomen()
+        public async Task<PagedResult<StudentResponseDTO>> GetAllAsync(int currentPage = 1, int pageSize = 10)
         {
-            var womenList = from estudiante in _context.Estudiantes
-                            where estudiante.Sexo == Sexo.FEMENINO
-                            select estudiante;
+            var query = _context.Students.AsQueryable();
 
-            return await womenList.ToListAsync();
+            int totalItems = await query.CountAsync();
 
-        }
+            var students = await query.Where(Student => Student.IsActive)
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-        public async Task<List<Estudiante>> GetAllAsync()
-        {
+            var responseList = _mapper.Map<List<StudentResponseDTO>>(students);
 
-            return await _context.Estudiantes.ToListAsync();
-        }
-
-        public async Task<List<Estudiante>> GetAllMen()
-        {
-            var menList = from estudiante in _context.Estudiantes
-                          where estudiante.Sexo == Sexo.MASCULINO
-                          select estudiante;
-
-            return await menList.ToListAsync();
-
-        }
-
-        public async Task<Estudiante> CreateAsync(EstudianteDTO estudiante)
-        {
-            Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
-
-            if (existingStudent != null)
+            return new PagedResult<StudentResponseDTO>
             {
+                Items = responseList,
+                TotalItems = totalItems,
+                PageSize = pageSize,
+                CurrentPage = currentPage,
+            };
+
+        }
+
+        public async Task<List<StudentResponseDTO>> GetAllWomen()
+        {
+            var womenList = await GetAllByGender(Gender.Female);
+
+            return womenList;
+        }
+
+
+        public async Task<List<StudentResponseDTO>> GetAllMen()
+        {
+            var menList = await GetAllByGender(Gender.Male);
+
+            return menList;
+        }
+
+        public async Task<List<StudentResponseDTO>> GetAllByGender(Gender gender)
+        {
+            var students = await _context.Students.Where(s => s.Gender == gender && s.IsActive == true).ToListAsync();
+
+            return _mapper.Map<List<StudentResponseDTO>>(students);
+
+        }
+
+        public async Task<StudentResponseDTO> CreateAsync(StudentRequestDTO student)
+        {
+            var existingStudent = await GetByNationalIdAsync(student.NationalId);
+
+            if (existingStudent != null) 
                 throw new CustomException(ErrorMessage.StudentAlreadyExists, StatusCode.BadRequest);
-            }
+        
 
-            var newStudent = _mapper.Map<Estudiante>(estudiante);
+            var newStudent = _mapper.Map<Student>(student);
 
-            await _context.Estudiantes.AddAsync(newStudent);
+            await _context.Students.AddAsync(newStudent);
             await _context.SaveChangesAsync();
 
-            return newStudent;
+            return  _mapper.Map<StudentResponseDTO>(newStudent);
         }
 
-        public async Task<Estudiante> GetByCedulaAsync(string cedula)
+        public async Task<Student> GetByNationalIdAsync(string nationalId)
         {
-            var estudiante = await _context.Estudiantes.FirstOrDefaultAsync(x => x.Cedula == cedula);
+            var student = await _context.Students.FirstOrDefaultAsync(x => 
+            x.NationalId == nationalId && x.IsActive == true);
 
-            return estudiante;
+            return student;
         }
 
-        public async Task<Estudiante> GetByIdAsync(int id)
+        public async Task<Student> GetByIdAsync(Guid id)
         {
-            var estudiante = await _context.Estudiantes.FindAsync(id);
+            var student = await _context.Students.FirstOrDefaultAsync(s => 
+            s.Id == id && s.IsActive == true);
 
-            return estudiante;
+            return student;
 
         }
 
-        public async Task<Estudiante> GetByCedulaOrThrow(string cedula)
+        public async Task<Student> GetByNationalIdOrThrow(string nationalId)
         {
-            var estudiante = await GetByCedulaAsync(cedula) ??
+            var student = await GetByNationalIdAsync(nationalId) ??
             throw new CustomException(ErrorMessage.StudentNotFound, StatusCode.NotFound); ;
             
-            return estudiante;
+            return student;
         }
 
-        public async Task<Estudiante> GetByIdOrThrow(int id)
+        public async Task<Student> GetByIdOrThrow(Guid id)
         {
-            var estudiante = await GetByIdAsync(id) ?? 
+            var student = await GetByIdAsync(id) ?? 
             throw new CustomException(ErrorMessage.StudentNotFound, StatusCode.NotFound);
 
-            return estudiante;
+            return student;
         }
 
-        public async Task<Estudiante> UpdateAsync(int id, EstudianteDTO estudiante)
+        public async Task<StudentResponseDTO> UpdateAsync(Guid id, StudentRequestDTO student)
         {
-            Estudiante studentToUpdate = await GetByIdOrThrow(id);
+            Student studentToUpdate = await GetByIdOrThrow(id);
 
-            Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
+            var existingNationalId = await GetByNationalIdAsync(student.NationalId);
 
-            if (existingStudent != null && studentToUpdate.Id != existingStudent.Id)
+            if (existingNationalId != null && studentToUpdate.Id != existingNationalId.Id)
             {
                 throw new CustomException(ErrorMessage.StudentAlreadyExists, StatusCode.BadRequest);
             }
+            _mapper.Map(student, studentToUpdate);
 
-            _mapper.Map(estudiante, studentToUpdate);
-
-            _context.Estudiantes.Update(studentToUpdate);
             await _context.SaveChangesAsync();
 
-            return studentToUpdate;
+            return _mapper.Map<StudentResponseDTO>(studentToUpdate);
 
         }
 
-        public async Task<Estudiante> DeleteAsync(string cedula)
+        public async Task<StudentResponseDTO> DeleteAsync(Guid id)
         {
-            Estudiante existingStudent = await GetByCedulaAsync(cedula);
+            Student existingStudent = await GetByIdOrThrow(id);
 
-            _context.Estudiantes.Remove(existingStudent);
-            await _context.SaveChangesAsync();
+                existingStudent.IsActive = false;
 
-            return existingStudent;
+                await _context.SaveChangesAsync();
+                return _mapper.Map<StudentResponseDTO>(existingStudent);
 
         }
 

@@ -25,7 +25,8 @@ builder.Services.AddScoped<IFamilyHistory, FamilyHistoryService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<DBContexto>(x => x.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DBContexto>(x => x.UseSqlServer(connectionString, 
+    b => b.MigrationsAssembly("FamilyHistorySystem.API")));
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
