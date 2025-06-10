@@ -25,14 +25,14 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int currentPage, [FromQuery] int pageSize)
+        public async Task<IActionResult> GetAll([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
         {
             var students = await _studentService.GetAllAsync(currentPage, pageSize);
             return Ok(new ApiResponse<PagedResult<StudentResponseDTO>>(SuccessMessage.StudentsFound, students));
         }
 
-        [HttpGet("getStudentById/{id}")]
-        public async Task<IActionResult> GetStudent(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
             var student = await _studentService.GetByIdOrThrow(id);
             
@@ -40,8 +40,8 @@ namespace FamilyHistorySystem.API.Controllers
                 _mapper.Map<StudentResponseDTO>(student)));
         }
 
-        [HttpGet("getStudentByCedula/{cedula}")]
-        public async Task<IActionResult> GetStudentByCedula(string cedula)
+        [HttpGet("{cedula}")]
+        public async Task<IActionResult> GetByCedula(string cedula)
         {
             var student  = await _studentService.GetByCedulaOrThrow(cedula);
 
@@ -50,13 +50,13 @@ namespace FamilyHistorySystem.API.Controllers
 
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateStudent([FromBody] StudentRequestDTO student)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] StudentRequestDTO student)
         {
                 if (ModelState.IsValid)
                 {
                 var newStudent = await _studentService.CreateAsync(student);
-                return CreatedAtAction(nameof(GetStudent), 
+                return CreatedAtAction(nameof(GetById), 
                     new { newStudent.Id }, new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentCreated, newStudent));
             }
                 else
@@ -65,8 +65,8 @@ namespace FamilyHistorySystem.API.Controllers
                 }
         }
 
-        [HttpPut("update/{id}")]
-        public async Task<IActionResult> EditStudent(int id, [FromBody] StudentRequestDTO estudiante)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] StudentRequestDTO estudiante)
         {
 
             if (ModelState.IsValid)
@@ -81,8 +81,8 @@ namespace FamilyHistorySystem.API.Controllers
 
         }
 
-        [HttpDelete("delete/{cedula}")]
-        public async Task<IActionResult> DeleteStudent(string cedula)
+        [HttpDelete("{cedula}")]
+        public async Task<IActionResult> Delete(string cedula)
         {
             var student = await _studentService.DeleteAsync(cedula);
 
