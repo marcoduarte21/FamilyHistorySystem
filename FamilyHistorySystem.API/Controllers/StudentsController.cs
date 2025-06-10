@@ -15,20 +15,20 @@ namespace FamilyHistorySystem.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class StudentController : ControllerBase
+    public class StudentsController : ControllerBase
     {
         private readonly IStudentService _studentService;
         private readonly IMapper _mapper;
-        public StudentController(IStudentService studentService, IMapper mapper) {
+        public StudentsController(IStudentService studentService, IMapper mapper) {
             _studentService = studentService;
             _mapper = mapper;
         }
 
-        [HttpGet("getStudents")]
-        public async Task<IActionResult> GetStudents()
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] int currentPage, [FromQuery] int pageSize)
         {
-            var students = await _studentService.GetAllAsync();
-            return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.StudentsFound, students));
+            var students = await _studentService.GetAllAsync(currentPage, pageSize);
+            return Ok(new ApiResponse<PagedResult<StudentResponseDTO>>(SuccessMessage.StudentsFound, students));
         }
 
         [HttpGet("getStudentById/{id}")]

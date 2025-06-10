@@ -11,7 +11,8 @@ namespace FamilyHistorySystem.Services.interfaces
 {
     public interface IStudentService
     {
-        Task<List<StudentResponseDTO>> GetAllAsync();
+        Task<PagedResult<StudentResponseDTO>> GetAllAsync(int currentPage, int pageSize);
+        Task<List<StudentResponseDTO>> GetAllByGender(Sexo sexo);
         Task<List<StudentResponseDTO>> GetAllMen();
         Task<List<StudentResponseDTO>> GetAllWomen();
         Task<StudentResponseDTO> CreateAsync(StudentRequestDTO estudiante);

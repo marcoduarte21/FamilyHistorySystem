@@ -26,25 +26,49 @@ namespace FamilyHistorySystem.Services.services
             _context = connection;
             _mapper = mapper;
         }
+        public async Task<PagedResult<StudentResponseDTO>> GetAllAsync(int currentPage = 1, int pageSize = 10)
+        {
+            var query = _context.Estudiantes.AsQueryable();
+
+            int totalItems = await query.CountAsync();
+
+            var students = await query
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var responseList = _mapper.Map<List<StudentResponseDTO>>(students);
+
+            return new PagedResult<StudentResponseDTO>
+            {
+                Items = responseList,
+                TotalItems = totalItems,
+                PageSize = pageSize,
+                CurrentPage = currentPage,
+            };
+
+        }
 
         public async Task<List<StudentResponseDTO>> GetAllWomen()
         {
-            var womenList = await _context.Estudiantes.Where(s => s.Sexo == Sexo.FEMENINO).ToListAsync();
+            var womenList = await GetAllByGender(Sexo.FEMENINO);
 
-            return _mapper.Map<List<StudentResponseDTO>>(womenList);
+            return womenList;
         }
 
-        public async Task<List<StudentResponseDTO>> GetAllAsync()
-        {
-
-            return _mapper.Map<List<StudentResponseDTO>>(await _context.Estudiantes.ToListAsync());
-        }
 
         public async Task<List<StudentResponseDTO>> GetAllMen()
         {
-            var menList = await _context.Estudiantes.Where(s => s.Sexo == Sexo.MASCULINO).ToListAsync();
+            var menList = await GetAllByGender(Sexo.MASCULINO);
 
-            return _mapper.Map<List<StudentResponseDTO>>(menList);
+            return menList;
+        }
+
+        public async Task<List<StudentResponseDTO>> GetAllByGender(Sexo sexo)
+        {
+            var students = await _context.Estudiantes.Where(s => s.Sexo == sexo).ToListAsync();
+
+            return _mapper.Map<List<StudentResponseDTO>>(students);
 
         }
 
