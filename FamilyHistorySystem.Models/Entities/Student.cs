@@ -1,14 +1,15 @@
-﻿using FamilyHistorySystem.Models.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FamilyHistorySystem.Models.DTOs
+namespace FamilyHistorySystem.Models.Entities
 {
-    public class StudentRequestDTO
+    [Table("Students")]
+    public class Student : AuditableEntity
     {
 
         [Required]
@@ -32,5 +33,8 @@ namespace FamilyHistorySystem.Models.DTOs
 
         [Required]
         public string FatherNationalId { get; set; }
+
+        [Required]
+        public bool IsActive { get; set; } = true;
     }
 }

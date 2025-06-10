@@ -32,7 +32,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var student = await _studentService.GetByIdOrThrow(id);
             
@@ -40,10 +40,10 @@ namespace FamilyHistorySystem.API.Controllers
                 _mapper.Map<StudentResponseDTO>(student)));
         }
 
-        [HttpGet("{cedula}")]
-        public async Task<IActionResult> GetByCedula(string cedula)
+        [HttpGet("GetByNationalId/{nationalId}")]
+        public async Task<IActionResult> GetByNationalId(string nationalId)
         {
-            var student  = await _studentService.GetByCedulaOrThrow(cedula);
+            var student  = await _studentService.GetByNationalIdOrThrow(nationalId);
 
             return Ok(new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentFound,
                 _mapper.Map<StudentResponseDTO>(student)));
@@ -66,12 +66,12 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] StudentRequestDTO estudiante)
+        public async Task<IActionResult> Update(Guid id, [FromBody] StudentRequestDTO studentDto)
         {
 
             if (ModelState.IsValid)
             {
-                var student = await _studentService.UpdateAsync(id, estudiante);
+                var student = await _studentService.UpdateAsync(id, studentDto);
                 return Ok(new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentUpdated, student));
             }
             else
@@ -81,10 +81,10 @@ namespace FamilyHistorySystem.API.Controllers
 
         }
 
-        [HttpDelete("{cedula}")]
-        public async Task<IActionResult> Delete(string cedula)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var student = await _studentService.DeleteAsync(cedula);
+            var student = await _studentService.DeleteAsync(id);
 
             if(student != null)
             {

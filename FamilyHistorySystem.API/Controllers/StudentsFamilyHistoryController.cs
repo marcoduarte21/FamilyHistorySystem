@@ -22,45 +22,45 @@ namespace FamilyHistorySystem.API.Controllers
             _familyHistoryService = familyHistoryService;
         }
 
-        [HttpGet("getParents/{cedula}")]
-        public async Task<IActionResult> GetParents(string cedula)
+        [HttpGet("getParents/{nationalId}")]
+        public async Task<IActionResult> GetParents(string nationalId)
         {
-            var parents = await _familyHistoryService.GetParents(cedula);
+            var parents = await _familyHistoryService.GetParents(nationalId);
             return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.ParentsFound, parents));
         }
 
-        [HttpGet("getChildren/{cedula}")]
-        public async Task<IActionResult> GetChildren(string cedula)
+        [HttpGet("getChildren/{nationalId}")]
+        public async Task<IActionResult> GetChildren(string nationalId)
         {
-            var children = await _familyHistoryService.GetChildren(cedula);
+            var children = await _familyHistoryService.GetChildren(nationalId);
             return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.ChildrenFound, children));
         }
 
-        [HttpGet("getSiblings/{cedula}")]
-        public async Task<IActionResult> GetSiblings(string cedula)
+        [HttpGet("getSiblings/{nationalId}")]
+        public async Task<IActionResult> GetSiblings(string nationalId)
         {
-            var siblings = await _familyHistoryService.GetSiblings(cedula);
+            var siblings = await _familyHistoryService.GetSiblings(nationalId);
             return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.SiblingsFound, siblings));
         }
 
-        [HttpGet("getGrandParents/{cedula}")]
-        public async Task<IActionResult> GetGrandParents(string cedula)
+        [HttpGet("getGrandParents/{nationalId}")]
+        public async Task<IActionResult> GetGrandParents(string nationalId)
         {
-            var grandparents = await _familyHistoryService.GetGrandParents(cedula);
+            var grandparents = await _familyHistoryService.GetGrandParents(nationalId);
             return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.GrandParentsFound, grandparents));
         }
 
-        [HttpGet("getUncles/{cedula}")]
-        public async Task<IActionResult> GetUncles(string cedula)
+        [HttpGet("getUncles/{nationalId}")]
+        public async Task<IActionResult> GetUncles(string nationalId)
         {
-            var uncles = await _familyHistoryService.GetUncles(cedula);
+            var uncles = await _familyHistoryService.GetUncles(nationalId);
             return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.UnclesFound, uncles));
         }
 
-        [HttpGet("getCousins/{cedula}")]
-        public async Task<IActionResult> GetCousins(string cedula)
+        [HttpGet("getCousins/{nationalId}")]
+        public async Task<IActionResult> GetCousins(string nationalId)
         {
-            var cousins = await _familyHistoryService.GetCousins(cedula);
+            var cousins = await _familyHistoryService.GetCousins(nationalId);
             return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.CousinsFound, cousins));
         }
     }

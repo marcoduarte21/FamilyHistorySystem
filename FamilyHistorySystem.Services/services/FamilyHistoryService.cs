@@ -31,13 +31,13 @@ namespace FamilyHistorySystem.Services.services
             _mapper = mapper;
         }
 
-        public async Task<List<StudentResponseDTO>> GetChildren(string cedula)
+        public async Task<List<StudentResponseDTO>> GetChildren(string nationalId)
         {
-            Estudiante parent = await _studentService.GetByCedulaOrThrow(cedula);
+            Student parent = await _studentService.GetByNationalIdOrThrow(nationalId);
 
-            var children = await _context.Estudiantes.Where(e =>
-            e.CedulaPadre == parent.Cedula
-            || e.CedulaMadre == parent.Cedula).ToListAsync();
+            var children = await _context.Students.Where(e =>
+            e.FatherNationalId == parent.NationalId
+            || e.MotherNationalId == parent.NationalId).ToListAsync();
 
             if (!children.Any())
             {
@@ -49,15 +49,15 @@ namespace FamilyHistorySystem.Services.services
             }
         }
 
-        public async Task<List<StudentResponseDTO>> GetCousins(string cedula)
+        public async Task<List<StudentResponseDTO>> GetCousins(string nationalId)
         {
-            Estudiante estudiante = await _studentService.GetByCedulaOrThrow(cedula);
-            var uncles = await GetUncles(cedula);
-            var cedulasUncles = uncles.Select(u => u.Cedula).ToList();
+            Student estudiante = await _studentService.GetByNationalIdOrThrow(nationalId);
+            var uncles = await GetUncles(nationalId);
+            var cedulasUncles = uncles.Select(u => u.NationalId).ToList();
 
-            var cousins = await _context.Estudiantes
-                .Where(e => (cedulasUncles.Contains(e.CedulaPadre)
-                || cedulasUncles.Contains(e.CedulaMadre))).ToListAsync();
+            var cousins = await _context.Students
+                .Where(e => (cedulasUncles.Contains(e.FatherNationalId)
+                || cedulasUncles.Contains(e.MotherNationalId))).ToListAsync();
 
             if (!cousins.Any())
             {
@@ -67,18 +67,17 @@ namespace FamilyHistorySystem.Services.services
             return _mapper.Map<List<StudentResponseDTO>>(cousins);
         }
 
-        public async Task<List<StudentResponseDTO>> GetGrandParents(string cedula)
+        public async Task<List<StudentResponseDTO>> GetGrandParents(string nationalId)
         {
-            Estudiante student;
-            student = await _studentService.GetByCedulaOrThrow(cedula);
-
-            var parents = await GetParents(cedula);
+            Student student = await _studentService.GetByNationalIdOrThrow(nationalId);
+             
+            var parents = await GetParents(nationalId);
 
             var grandparentsID = parents.SelectMany(p =>
-            new[] { p.CedulaMadre, p.CedulaPadre }).Distinct().ToList();
+            new[] { p.MotherNationalId, p.FatherNationalId }).Distinct().ToList();
 
-            var grandparents = await _context.Estudiantes
-                .Where(e => grandparentsID.Contains(e.Cedula)).ToListAsync();
+            var grandparents = await _context.Students
+                .Where(e => grandparentsID.Contains(e.NationalId)).ToListAsync();
 
             if (!grandparents.Any())
             {
@@ -92,12 +91,11 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<List<StudentResponseDTO>> GetParents(string cedula)
         {
-            Estudiante student;
-            student = await _studentService.GetByCedulaOrThrow(cedula);
-            var parents = await _context.Estudiantes
+            Student student = await _studentService.GetByNationalIdOrThrow(cedula);
+            var parents = await _context.Students
                 .Where(e =>
-                e.Cedula == student.CedulaPadre
-                || e.Cedula == student.CedulaMadre).ToListAsync();
+                e.NationalId == student.FatherNationalId
+                || e.NationalId == student.MotherNationalId).ToListAsync();
 
             if (parents.Any())
             {
@@ -111,16 +109,15 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<List<StudentResponseDTO>> GetSiblings(string cedula)
         {
-            Estudiante student;
-            student = await _studentService.GetByCedulaOrThrow(cedula);
+            Student student = await _studentService.GetByNationalIdOrThrow(cedula);
 
-            string fatherID = student.CedulaPadre;
-            string motherID = student.CedulaMadre;
+            string fatherID = student.FatherNationalId;
+            string motherID = student.MotherNationalId;
 
 
-            var siblings = await _context.Estudiantes.Where(e =>
-            (e.CedulaPadre == fatherID || e.CedulaMadre == motherID)
-                && e.Cedula != student.Cedula).ToListAsync();
+            var siblings = await _context.Students.Where(e =>
+            (e.FatherNationalId == fatherID || e.MotherNationalId == motherID)
+                && e.NationalId != student.NationalId).ToListAsync();
 
             if (!siblings.Any())
             {
@@ -130,19 +127,18 @@ namespace FamilyHistorySystem.Services.services
             return _mapper.Map<List<StudentResponseDTO>>(siblings);
         }
 
-        public async Task<List<StudentResponseDTO>> GetUncles(string cedula)
+        public async Task<List<StudentResponseDTO>> GetUncles(string nationalId)
         {
-            Estudiante student;
-            student = await _studentService.GetByCedulaOrThrow(cedula);
+            Student student = await _studentService.GetByNationalIdAsync(nationalId);
 
-            var parents = await GetGrandParents(student.Cedula);
-            var parentsID = parents.Select(p => p.Cedula).ToList();
+            var parents = await GetGrandParents(student.NationalId);
+            var parentsID = parents.Select(p => p.NationalId).ToList();
 
-            var uncles = await _context.Estudiantes
-                .Where(e => (parentsID.Contains(e.CedulaPadre)
-                || parentsID.Contains(e.CedulaMadre))
-                && (e.Cedula != student.CedulaPadre
-                && e.Cedula != student.CedulaMadre)).ToListAsync();
+            var uncles = await _context.Students
+                .Where(e => (parentsID.Contains(e.FatherNationalId)
+                || parentsID.Contains(e.MotherNationalId))
+                && (e.NationalId != student.FatherNationalId
+                && e.NationalId != student.MotherNationalId)).ToListAsync();
 
             if (!uncles.Any())
             {

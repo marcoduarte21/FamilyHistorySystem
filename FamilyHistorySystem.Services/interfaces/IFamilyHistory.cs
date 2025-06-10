@@ -10,11 +10,11 @@ namespace FamilyHistorySystem.Services.interfaces
 {
     public interface IFamilyHistory
     {
-        Task<List<StudentResponseDTO>> GetChildren(string cedula);
-        Task<List<StudentResponseDTO>> GetParents(string cedula);
-        Task<List<StudentResponseDTO>> GetSiblings(string cedula);
-        Task<List<StudentResponseDTO>> GetGrandParents(string cedula);
-        Task<List<StudentResponseDTO>> GetUncles(string cedula);
-        Task<List<StudentResponseDTO>> GetCousins(string cedula);
+        Task<List<StudentResponseDTO>> GetChildren(string nationalId);
+        Task<List<StudentResponseDTO>> GetParents(string nationalId);
+        Task<List<StudentResponseDTO>> GetSiblings(string nationalId);
+        Task<List<StudentResponseDTO>> GetGrandParents(string nationalId);
+        Task<List<StudentResponseDTO>> GetUncles(string nationalId);
+        Task<List<StudentResponseDTO>> GetCousins(string nationalId);
     }
 }
