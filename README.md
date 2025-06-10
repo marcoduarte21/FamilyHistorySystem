@@ -28,7 +28,6 @@ By entering only the student's mother and father IDs, the system automatically m
 - .NET Core
 - Entity Framework Core
 - SQL Server
-- HTML, CSS, JavaScript (React optional)
 - LINQ, MVC & SOLID principles
 
 ## 🚀 Getting Started
@@ -36,8 +35,8 @@ By entering only the student's mother and father IDs, the system automatically m
 ### Prerequisites
 
 - Visual Studio 2022 or newer
-- .NET SDK 6.0+
-- SQL Server (Express or full)
+- .NET SDK 8.0+
+- SQL Server (Express)
 
 ### Installation Steps
 
