@@ -14,6 +14,7 @@ using System.Collections;
 using AutoMapper;
 using FamilyHistorySystem.Utils.constants.messages.ErrorMessage;
 using FamilyHistorySystem.Utils.constants.Response;
+using FamilyHistorySystem.Models.DTOs;
 
 namespace FamilyHistorySystem.Services.services
 {
@@ -21,14 +22,16 @@ namespace FamilyHistorySystem.Services.services
     {
         private readonly IStudentService _studentService;
         private readonly DBContexto _context;
+        private readonly IMapper _mapper;
 
-        public FamilyHistoryService(IStudentService studentService, DBContexto context)
+        public FamilyHistoryService(IStudentService studentService, DBContexto context, IMapper mapper)
         {
             _studentService = studentService;
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<List<Estudiante>> GetChildren(string cedula)
+        public async Task<List<StudentResponseDTO>> GetChildren(string cedula)
         {
             Estudiante parent = await _studentService.GetByCedulaOrThrow(cedula);
 
@@ -42,11 +45,11 @@ namespace FamilyHistorySystem.Services.services
             }
             else
             {
-                return children;
+                return _mapper.Map<List<StudentResponseDTO>>(children);
             }
         }
 
-        public async Task<List<Estudiante>> GetCousins(string cedula)
+        public async Task<List<StudentResponseDTO>> GetCousins(string cedula)
         {
             Estudiante estudiante = await _studentService.GetByCedulaOrThrow(cedula);
             var uncles = await GetUncles(cedula);
@@ -61,15 +64,15 @@ namespace FamilyHistorySystem.Services.services
                 throw new CustomException(ErrorMessage.NoCousinsFound, StatusCode.NotFound);
             }
 
-            return cousins;
+            return _mapper.Map<List<StudentResponseDTO>>(cousins);
         }
 
-        public async Task<List<Estudiante>> GetGrandParents(string cedula)
+        public async Task<List<StudentResponseDTO>> GetGrandParents(string cedula)
         {
             Estudiante student;
             student = await _studentService.GetByCedulaOrThrow(cedula);
 
-            List<Estudiante> parents = await GetParents(cedula);
+            var parents = await GetParents(cedula);
 
             var grandparentsID = parents.SelectMany(p =>
             new[] { p.CedulaMadre, p.CedulaPadre }).Distinct().ToList();
@@ -83,11 +86,11 @@ namespace FamilyHistorySystem.Services.services
             }
             else
             {
-                return grandparents;
+                return _mapper.Map<List<StudentResponseDTO>>(grandparents);
             }
         }
 
-        public async Task<List<Estudiante>> GetParents(string cedula)
+        public async Task<List<StudentResponseDTO>> GetParents(string cedula)
         {
             Estudiante student;
             student = await _studentService.GetByCedulaOrThrow(cedula);
@@ -98,7 +101,7 @@ namespace FamilyHistorySystem.Services.services
 
             if (parents.Any())
             {
-                return parents;
+                return _mapper.Map<List<StudentResponseDTO>>(parents);
             }
             else
             {
@@ -106,7 +109,7 @@ namespace FamilyHistorySystem.Services.services
             }
         }
 
-        public async Task<List<Estudiante>> GetSiblings(string cedula)
+        public async Task<List<StudentResponseDTO>> GetSiblings(string cedula)
         {
             Estudiante student;
             student = await _studentService.GetByCedulaOrThrow(cedula);
@@ -124,15 +127,15 @@ namespace FamilyHistorySystem.Services.services
                 throw new CustomException(ErrorMessage.NoSiblingsFound, StatusCode.NotFound);
             }
 
-            return siblings;
+            return _mapper.Map<List<StudentResponseDTO>>(siblings);
         }
 
-        public async Task<List<Estudiante>> GetUncles(string cedula)
+        public async Task<List<StudentResponseDTO>> GetUncles(string cedula)
         {
             Estudiante student;
             student = await _studentService.GetByCedulaOrThrow(cedula);
 
-            List<Estudiante> parents = await GetGrandParents(student.Cedula);
+            var parents = await GetGrandParents(student.Cedula);
             var parentsID = parents.Select(p => p.Cedula).ToList();
 
             var uncles = await _context.Estudiantes
@@ -147,7 +150,7 @@ namespace FamilyHistorySystem.Services.services
             }
             else
             {
-                return uncles;
+                return _mapper.Map<List<StudentResponseDTO>>(uncles);
             }
         }
     }

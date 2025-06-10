@@ -27,47 +27,41 @@ namespace FamilyHistorySystem.Services.services
             _mapper = mapper;
         }
 
-        public async Task<List<Estudiante>> GetAllWomen()
+        public async Task<List<StudentResponseDTO>> GetAllWomen()
         {
-            var womenList = from estudiante in _context.Estudiantes
-                            where estudiante.Sexo == Sexo.FEMENINO
-                            select estudiante;
+            var womenList = await _context.Estudiantes.Where(s => s.Sexo == Sexo.FEMENINO).ToListAsync();
 
-            return await womenList.ToListAsync();
+            return _mapper.Map<List<StudentResponseDTO>>(womenList);
+        }
+
+        public async Task<List<StudentResponseDTO>> GetAllAsync()
+        {
+
+            return _mapper.Map<List<StudentResponseDTO>>(await _context.Estudiantes.ToListAsync());
+        }
+
+        public async Task<List<StudentResponseDTO>> GetAllMen()
+        {
+            var menList = await _context.Estudiantes.Where(s => s.Sexo == Sexo.MASCULINO).ToListAsync();
+
+            return _mapper.Map<List<StudentResponseDTO>>(menList);
 
         }
 
-        public async Task<List<Estudiante>> GetAllAsync()
+        public async Task<StudentResponseDTO> CreateAsync(StudentRequestDTO estudiante)
         {
+            var existingStudent = await GetByCedulaAsync(estudiante.Cedula);
 
-            return await _context.Estudiantes.ToListAsync();
-        }
-
-        public async Task<List<Estudiante>> GetAllMen()
-        {
-            var menList = from estudiante in _context.Estudiantes
-                          where estudiante.Sexo == Sexo.MASCULINO
-                          select estudiante;
-
-            return await menList.ToListAsync();
-
-        }
-
-        public async Task<Estudiante> CreateAsync(EstudianteDTO estudiante)
-        {
-            Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
-
-            if (existingStudent != null)
-            {
+            if (existingStudent != null) 
                 throw new CustomException(ErrorMessage.StudentAlreadyExists, StatusCode.BadRequest);
-            }
+        
 
             var newStudent = _mapper.Map<Estudiante>(estudiante);
 
             await _context.Estudiantes.AddAsync(newStudent);
             await _context.SaveChangesAsync();
 
-            return newStudent;
+            return  _mapper.Map<StudentResponseDTO>(newStudent);
         }
 
         public async Task<Estudiante> GetByCedulaAsync(string cedula)
@@ -101,34 +95,32 @@ namespace FamilyHistorySystem.Services.services
             return estudiante;
         }
 
-        public async Task<Estudiante> UpdateAsync(int id, EstudianteDTO estudiante)
+        public async Task<StudentResponseDTO> UpdateAsync(int id, StudentRequestDTO estudiante)
         {
             Estudiante studentToUpdate = await GetByIdOrThrow(id);
 
-            Estudiante existingStudent = await GetByCedulaAsync(estudiante.Cedula);
+            var existingCedula = await GetByCedulaAsync(estudiante.Cedula);
 
-            if (existingStudent != null && studentToUpdate.Id != existingStudent.Id)
+            if (existingCedula != null && studentToUpdate.Id != existingCedula.Id)
             {
                 throw new CustomException(ErrorMessage.StudentAlreadyExists, StatusCode.BadRequest);
             }
-
             _mapper.Map(estudiante, studentToUpdate);
 
-            _context.Estudiantes.Update(studentToUpdate);
             await _context.SaveChangesAsync();
 
-            return studentToUpdate;
+            return _mapper.Map<StudentResponseDTO>(studentToUpdate);
 
         }
 
-        public async Task<Estudiante> DeleteAsync(string cedula)
+        public async Task<StudentResponseDTO> DeleteAsync(string cedula)
         {
-            Estudiante existingStudent = await GetByCedulaAsync(cedula);
+            var existingStudent = _mapper.Map<Estudiante>(await GetByCedulaOrThrow(cedula));
 
             _context.Estudiantes.Remove(existingStudent);
             await _context.SaveChangesAsync();
 
-            return existingStudent;
+            return _mapper.Map<StudentResponseDTO>(existingStudent);
 
         }
 

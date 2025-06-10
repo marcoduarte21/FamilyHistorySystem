@@ -12,9 +12,13 @@ namespace FamilyHistorySystem.AutoMapperProfiles
     public class MappingProfile : Profile
     {
         public MappingProfile() {
-            CreateMap<Estudiante, EstudianteDTO>();
-            CreateMap<EstudianteDTO, Estudiante>()
-                .ForMember(dest => dest.Edad, opt => opt.Ignore());
+            CreateMap<StudentRequestDTO, Estudiante>();
+            CreateMap<Estudiante, StudentResponseDTO>().ForMember(dest => dest.Edad, opt => opt.MapFrom(src =>
+            src.FechaDeNacimiento.HasValue
+            ? DateTime.Today.Year - src.FechaDeNacimiento.Value.Year
+              - (src.FechaDeNacimiento.Value.Date > DateTime.Today.AddYears(-(
+                  DateTime.Today.Year - src.FechaDeNacimiento.Value.Year)) ? 1 : 0)
+            : 0));
         }
     }
 }

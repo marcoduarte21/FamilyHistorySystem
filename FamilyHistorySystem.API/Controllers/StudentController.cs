@@ -18,15 +18,17 @@ namespace FamilyHistorySystem.API.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
-        public StudentController(IStudentService studentService) {
+        private readonly IMapper _mapper;
+        public StudentController(IStudentService studentService, IMapper mapper) {
             _studentService = studentService;
+            _mapper = mapper;
         }
 
         [HttpGet("getStudents")]
         public async Task<IActionResult> GetStudents()
         {
             var students = await _studentService.GetAllAsync();
-            return Ok(new ApiResponse<List<Estudiante>>(SuccessMessage.StudentsFound, students));
+            return Ok(new ApiResponse<List<StudentResponseDTO>>(SuccessMessage.StudentsFound, students));
         }
 
         [HttpGet("getStudentById/{id}")]
@@ -34,7 +36,8 @@ namespace FamilyHistorySystem.API.Controllers
         {
             var student = await _studentService.GetByIdOrThrow(id);
             
-            return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentFound, student));
+            return Ok(new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentFound,
+                _mapper.Map<StudentResponseDTO>(student)));
         }
 
         [HttpGet("getStudentByCedula/{cedula}")]
@@ -42,18 +45,19 @@ namespace FamilyHistorySystem.API.Controllers
         {
             var student  = await _studentService.GetByCedulaOrThrow(cedula);
 
-            return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentFound, student));
+            return Ok(new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentFound,
+                _mapper.Map<StudentResponseDTO>(student)));
 
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateStudent([FromBody] EstudianteDTO student)
+        public async Task<IActionResult> CreateStudent([FromBody] StudentRequestDTO student)
         {
                 if (ModelState.IsValid)
                 {
                 var newStudent = await _studentService.CreateAsync(student);
                 return CreatedAtAction(nameof(GetStudent), 
-                    new { newStudent.Id }, new ApiResponse<Estudiante>(SuccessMessage.StudentCreated, newStudent));
+                    new { newStudent.Id }, new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentCreated, newStudent));
             }
                 else
                 {
@@ -62,13 +66,13 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> EditStudent(int id, [FromBody] EstudianteDTO estudiante)
+        public async Task<IActionResult> EditStudent(int id, [FromBody] StudentRequestDTO estudiante)
         {
 
             if (ModelState.IsValid)
             {
                 var student = await _studentService.UpdateAsync(id, estudiante);
-                return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentUpdated, student));
+                return Ok(new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentUpdated, student));
             }
             else
             {
@@ -84,7 +88,7 @@ namespace FamilyHistorySystem.API.Controllers
 
             if(student != null)
             {
-                return Ok(new ApiResponse<Estudiante>(SuccessMessage.StudentDeleted, student));
+                return Ok(new ApiResponse<StudentResponseDTO>(SuccessMessage.StudentDeleted, student));
             }
             else
             {
