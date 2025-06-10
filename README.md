@@ -44,3 +44,16 @@ By entering only the student's mother and father IDs, the system automatically m
 
    ```bash
    git clone https://github.com/marcoduarte21/FamilyHistorySystem.git
+   ```
+
+2. Configure the database connection string in appsettings.json.
+
+3. Run the following commands in the Package Manager Console to apply migrations:
+
+```bash
+    Update-Database
+```
+
+## 📄 License
+
+This project is open-source and available under the MIT License.
