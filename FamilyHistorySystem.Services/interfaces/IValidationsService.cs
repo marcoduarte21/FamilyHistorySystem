@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace FamilyHistorySystem.Services.interfaces
 {
-    public interface IAgeService
+    public interface IValidationsService
     {
-        public int CalculateAge(DateTime? birthDate);
+        public void ValidateBirthDate(DateTime? birthDate);
     }
 }

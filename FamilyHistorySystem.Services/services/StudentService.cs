@@ -20,6 +20,7 @@ namespace FamilyHistorySystem.Services.services
 
         private DBContexto _context;
         private readonly IMapper _mapper;
+        private readonly ValidationService _validationsService = new ValidationService();
 
         public StudentService(DBContexto connection, IMapper mapper)
         {
@@ -74,6 +75,8 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<StudentResponseDTO> CreateAsync(StudentRequestDTO student)
         {
+            _validationsService.ValidateBirthDate(student.DateOfBirth);
+
             var existingStudent = await GetByNationalIdAsync(student.NationalId);
 
             if (existingStudent != null) 
@@ -123,6 +126,8 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<StudentResponseDTO> UpdateAsync(Guid id, StudentRequestDTO student)
         {
+            _validationsService.ValidateBirthDate(student.DateOfBirth);
+
             Student studentToUpdate = await GetByIdOrThrow(id);
 
             var existingNationalId = await GetByNationalIdAsync(student.NationalId);

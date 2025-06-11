@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FamilyHistorySystem.Exceptions\FamilyHistorySystem.Exceptions.csproj" />
+    <ProjectReference Include="..\FamilyHistorySystem.Utils\FamilyHistorySystem.Utils.csproj" />
   </ItemGroup>
 
 </Project>

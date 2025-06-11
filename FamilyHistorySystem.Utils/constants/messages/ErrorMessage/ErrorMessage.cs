@@ -19,5 +19,11 @@ namespace FamilyHistorySystem.Utils.constants.messages.ErrorMessage
         public const string NoGrandParentsFound = "No grandparents found for this student";
         public const string NoUnclesFound = "No uncles found for this student";
         public const string NoCousinsFound = "No cousins found for this student";
+        public const string NationalIdMinLength = "National ID must be 8 characters long.";
+        public const string OnlyDigitsNationalId = "National ID must be exactly 8 digits.";
+        public const string FirstNameOnlyLetters = "First name can only contain letters and spaces.";
+        public const string LastNameOnlyLetters = "Last name can only contain letters and spaces.";
+        public const string InvalidBirthDate = "Birth date cannot be in the future.";
+        public const string BirthDateRequired = "Birth date is required.";
     }
 }
