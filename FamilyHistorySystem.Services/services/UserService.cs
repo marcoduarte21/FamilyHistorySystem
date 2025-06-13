@@ -28,40 +28,58 @@ namespace FamilyHistorySystem.Services.services
 
         public async Task<RegisterResponseDto> CreateUserAsync(RegisterUserDto userDto)
         {
-            var existingUser = await GetByEmailAsync(userDto.Email);
-
-            if (existingUser != null)
+            if (userDto.Role == Role.user)
             {
-                throw new CustomException(ErrorMessage.UserAlreadyExists, StatusCode.BadRequest);
+                var existingUser = await GetByEmailAsync(userDto.Email);
+
+                if (existingUser != null)
+                {
+                    throw new CustomException(ErrorMessage.UserAlreadyExists, StatusCode.BadRequest);
+                }
+
+                var user = new User
+                {
+                    Email = userDto.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
+                    PhoneNumber = userDto.PhoneNumber,
+                    Role = userDto.Role
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                return _mapper.Map<RegisterResponseDto>(user);
             }
-
-            var user = new User
+            else
             {
-                Email = userDto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
-                FirstName = userDto.FirstName,
-                LastName = userDto.LastName,
-                PhoneNumber = userDto.PhoneNumber,
-                Role = userDto.Role
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return _mapper.Map<RegisterResponseDto>(user);
+                throw new CustomException(ErrorMessage.RegisterOnlyUserRole, StatusCode.BadRequest);
+            }
         }
 
         public async Task<bool> DeleteUserAsync(Guid id)
         {
             var existingUser = await GetByIdOrThrowAsync(id);
+            existingUser.IsActive = false;
 
-            _context.Users.Remove(existingUser);
-            return await _context.SaveChangesAsync() > 0;
+            _context.Users.Update(existingUser);
+            var result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+            {
+                return true;
+            }
+            else
+            {
+                throw new CustomException(ErrorMessage.UserUpdateFailed, StatusCode.InternalServerError);
+
+            }
         }
 
         public async Task<List<UserResponseDto>> GetAllUsersAsync()
         {
-            var list = await _context.Users.ToListAsync();
+            var list = await _context.Users.Where(x => x.IsActive == true).ToListAsync();
 
             return _mapper.Map<List<UserResponseDto>>(list);
         }

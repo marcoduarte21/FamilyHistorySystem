@@ -13,7 +13,6 @@ namespace FamilyHistorySystem.API.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    [Authorize(Roles = "admin")]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -25,6 +24,8 @@ namespace FamilyHistorySystem.API.Controllers
             _mapper = mapper;
         }
 
+        [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Create([FromBody] RegisterUserDto dto)
         {
             var user = await _userService.CreateUserAsync(dto);
@@ -35,6 +36,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var user = await _userService.GetByIdOrThrowAsync(id);
@@ -44,6 +46,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpGet("GetByEmail/{email}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetByEmail(string email)
         {
             var user = await _userService.GetByEmailOrThrowAsync(email);
@@ -52,6 +55,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetAll()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -59,6 +63,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UserRequestDto dto)
         {
             var user = await _userService.UpdateUserAsync(id, dto);
@@ -66,6 +71,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _userService.DeleteUserAsync(id);
@@ -75,7 +81,7 @@ namespace FamilyHistorySystem.API.Controllers
         }
 
         [HttpGet("GetProfile")]
-        [Authorize(Roles = "user,admin")]
+        [Authorize(Roles = "admin,user")]
         public async Task<IActionResult> GetProfile()
         {
             var userLoggedId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

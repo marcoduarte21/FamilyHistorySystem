@@ -38,5 +38,6 @@ namespace FamilyHistorySystem.Utils.constants.messages.ErrorMessage
         public const string LogoutFailed = "Logout failed. Please try again later.";
         public const string RegisterOnlyUserRole = "Only user role is allowed for this register section.";
         public const string UserUpdateFailed = "User update failed. Please try again later.";
+        public const string ErrorAlreadyLogged = "Sorry you can´t login, User already logged.";
     }
 }

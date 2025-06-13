@@ -34,7 +34,5 @@ namespace FamilyHistorySystem.Models.Entities
         [Required]
         public string FatherNationalId { get; set; }
 
-        [Required]
-        public bool IsActive { get; set; } = true;
     }
 }

@@ -63,13 +63,17 @@ namespace FamilyHistorySystem.API.Controllers.auth
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
         {
-            if (string.IsNullOrEmpty(refreshToken))
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (string.IsNullOrEmpty(dto.RefreshToken))
             {
                 return BadRequest(new ApiResponse<object>(ErrorMessage.InvalidToken, null, false));
             }
-            var newToken = await _authService.RefreshTokenAsync(refreshToken);
+            var newToken = await _authService.RefreshTokenAsync(dto.RefreshToken);
             return Ok(new ApiResponse<object>(SuccessMessage.tokenRefreshed, newToken));
         }
 
@@ -78,15 +82,6 @@ namespace FamilyHistorySystem.API.Controllers.auth
         public async Task<IActionResult> GetById(Guid id)
         {
             var user = await _userService.GetByIdOrThrowAsync(id);
-            return Ok(new ApiResponse<RegisterResponseDto>(SuccessMessage.UserFound,
-                _mapper.Map<RegisterResponseDto>(user)));
-        }
-
-        [HttpGet("GetByEmail/{email}")]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> GetByEmail(string email)
-        {
-            var user = await _userService.GetByEmailOrThrowAsync(email);
             return Ok(new ApiResponse<RegisterResponseDto>(SuccessMessage.UserFound,
                 _mapper.Map<RegisterResponseDto>(user)));
         }

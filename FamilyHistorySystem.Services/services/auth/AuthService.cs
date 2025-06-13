@@ -19,6 +19,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Configuration;
 using FamilyHistorySystem.Services.interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace FamilyHistorySystem.Services.services.auth
 {
@@ -28,14 +29,15 @@ namespace FamilyHistorySystem.Services.services.auth
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly IUserService _userService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(DBContexto context, IMapper mapper, IConfiguration config, IUserService userService)
+        public AuthService(DBContexto context, IMapper mapper, IConfiguration config, IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _mapper = mapper;
             _config = config;
             _userService = userService;
-
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<bool> ChangePasswordAsync(Guid userId, string oldPassword, string newPassword)
@@ -45,8 +47,14 @@ namespace FamilyHistorySystem.Services.services.auth
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto dto)
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(x =>
-            x.Email == dto.Email);
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                throw new CustomException(ErrorMessage.ErrorAlreadyLogged, StatusCode.BadRequest);
+            }
+
+            var existingUser = await _userService.GetByEmailAsync(dto.Email);
 
             if (existingUser == null || !BCrypt.Net.BCrypt.Verify(dto.Password, existingUser.PasswordHash))
             {
@@ -99,16 +107,8 @@ namespace FamilyHistorySystem.Services.services.auth
 
         public async Task<RegisterResponseDto> RegisterAsync(RegisterUserDto dto)
         {
-            if (dto.Role == Role.user)
-            {
-
                 var user = await _userService.CreateUserAsync(dto);
                 return user;
-            }
-            else
-            {
-                throw new CustomException(ErrorMessage.RegisterOnlyUserRole, StatusCode.BadRequest);
-            }
         }
 
 

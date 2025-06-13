@@ -61,7 +61,6 @@ builder.Services.AddAuthentication(options =>
 }
 
 );
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -69,13 +68,23 @@ builder.Services.AddScoped<IFamilyHistory, FamilyHistoryService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddHttpContextAccessor();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<DBContexto>(x => x.UseSqlServer(connectionString, 
-    b => b.MigrationsAssembly("FamilyHistorySystem.API")));
+builder.Services.AddDbContext<DBContexto>((serviceProvider, options) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+    var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+    options.UseSqlServer(connectionString, sql =>
+    {
+        sql.MigrationsAssembly("FamilyHistorySystem.API");
+    });
+});
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAutoMapper(typeof(MapperAuth));
+
 
 builder.Services.AddCors(options =>
 {
@@ -110,7 +119,6 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -17,5 +17,11 @@ namespace FamilyHistorySystem.Models.Entities
 
       [Required]
       public DateTime UpdatedAt { get; set; }
+
+      public Guid? CreatedBy { get; set; }
+      public Guid? UpdatedBy { get; set; }
+
+      [Required]
+      public bool IsActive { get; set; } = true;
     }
 }
