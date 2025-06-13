@@ -1,4 +1,5 @@
 ﻿using FamilyHistorySystem.Models.Entities;
+using FamilyHistorySystem.Models.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,6 +8,8 @@ namespace FamilyHistorySystem.DataAccess
     public class DBContexto(DbContextOptions<DBContexto> options) : DbContext(options)
     {
         public DbSet<Student> Students { get; set; }
+
+        public DbSet<User> Users { get; set; }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

@@ -19,5 +19,11 @@ namespace FamilyHistorySystem.Utils.constants.messages.successMessage
         public const string GrandParentsFound = "Grandparents found successfully";
         public const string UnclesFound = "Uncles found successfully";
         public const string CousinsFound = "Cousins found successfully";
+        public const string RegisterSuccess = "User registered successfully";
+        public const string LoginSuccess = "User logged in successfully";
+        public const string UserFound = "User found successfully";
+        public const string LogoutSuccess = "User logged out successfully";
+        public const string tokenRefreshed = "Token refreshed successfully";
+        public const string UsersFound = "Users found successfully";
     }
 }

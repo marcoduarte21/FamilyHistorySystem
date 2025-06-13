@@ -10,10 +10,12 @@ using FamilyHistorySystem.Services.interfaces;
 using FamilyHistorySystem.Utils.constants.Response;
 using FamilyHistorySystem.Utils.constants.messages.successMessage;
 using FamilyHistorySystem.Utils.constants.messages.ErrorMessage;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyHistorySystem.API.Controllers
 {
     [Route("api/v1/[controller]")]
+    [Authorize]
     [ApiController]
     public class StudentsController : ControllerBase
     {

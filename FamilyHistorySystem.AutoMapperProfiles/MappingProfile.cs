@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using FamilyHistorySystem.Models.DTOs;
+using FamilyHistorySystem.Models.DTOs.Auth;
+using FamilyHistorySystem.Models.DTOs.user;
 using FamilyHistorySystem.Models.Entities;
+using FamilyHistorySystem.Models.Entities.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +22,8 @@ namespace FamilyHistorySystem.AutoMapperProfiles
               - (src.DateOfBirth.Value.Date > DateTime.Today.AddYears(-(
                   DateTime.Today.Year - src.DateOfBirth.Value.Year)) ? 1 : 0)
             : 0));
+            CreateMap<UserRequestDto, User>();
+            CreateMap<User, UserResponseDto>();
         }
     }
 }

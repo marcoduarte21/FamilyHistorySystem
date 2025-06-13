@@ -8,10 +8,12 @@ using AutoMapper;
 using FamilyHistorySystem.Utils.constants.Response;
 using FamilyHistorySystem.Utils.constants.messages.successMessage;
 using FamilyHistorySystem.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyHistorySystem.API.Controllers
 {
     [Route("api/v1/[controller]")]
+    [Authorize]
     [ApiController]
     public class StudentsFamilyHistoryController : ControllerBase
     {
