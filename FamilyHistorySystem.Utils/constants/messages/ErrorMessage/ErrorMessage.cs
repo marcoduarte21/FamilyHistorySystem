@@ -39,5 +39,7 @@ namespace FamilyHistorySystem.Utils.constants.messages.ErrorMessage
         public const string RegisterOnlyUserRole = "Only user role is allowed for this register section.";
         public const string UserUpdateFailed = "User update failed. Please try again later.";
         public const string ErrorAlreadyLogged = "Sorry you can´t login, User already logged.";
+        public const string ErrorUnauthorized = "{\"message\": \"Invalid or expired token\"}";
+        public const string ErrorForbidden = "{\"message\": \"You do not have permission to perform this action.\"}";
     }
 }

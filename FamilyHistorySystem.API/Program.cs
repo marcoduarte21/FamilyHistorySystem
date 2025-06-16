@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using FamilyHistorySystem.Services.interfaces.auth;
 using FamilyHistorySystem.Services.services.auth;
+using FamilyHistorySystem.Utils.constants.messages.ErrorMessage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,15 +48,15 @@ builder.Services.AddAuthentication(options =>
     {
         OnAuthenticationFailed = context =>
         {
-            context.Response.StatusCode = 401;
+            context.Response.StatusCode = StatusCode.Unauthorized;
             context.Response.ContentType = "application/json";
-            return context.Response.WriteAsync("{\"message\": \"Token inválido o expirado\"}");
+            return context.Response.WriteAsync(ErrorMessage.ErrorUnauthorized);
         },
         OnForbidden = context =>
         {
-            context.Response.StatusCode = 403;
+            context.Response.StatusCode = StatusCode.Forbidden;
             context.Response.ContentType = "application/json";
-            return context.Response.WriteAsync("{\"message\": \"Acceso denegado. El rol no es permitido. \"}");
+            return context.Response.WriteAsync(ErrorMessage.ErrorForbidden);
         }
     };
 }
